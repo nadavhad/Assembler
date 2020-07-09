@@ -13,9 +13,10 @@ static struct Node *createNode(const char *string) {
   node = (struct Node *) malloc(sizeof(struct Node));
   node->next = NULL;
   node->string = string;
+  return node;
 }
 
-void log(const char *error) {
+void logError(const char *error) {
   struct Node *added = createNode(error);
   struct Node *iterator = NULL;
   if(first == NULL) {
