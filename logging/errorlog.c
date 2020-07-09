@@ -1,28 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
+#define MAX_ERROR_LENGTH 200
 struct Node {
-    const char *string;
+    char string[MAX_ERROR_LENGTH];
     struct Node *next;
 };
 
-static struct Node *first = NULL;
+static struct Node *_head = NULL;
 
 static struct Node *createNode(const char *string) {
   struct Node *node;
   node = (struct Node *) malloc(sizeof(struct Node));
   node->next = NULL;
-  node->string = string;
+  strncpy(node->string, string, MAX_ERROR_LENGTH);
   return node;
 }
 
 void logError(const char *error) {
   struct Node *added = createNode(error);
   struct Node *iterator = NULL;
-  if(first == NULL) {
-    first = createNode("Errors:");
+  if(_head == NULL) {
+      _head = createNode("Errors:");
   }
-    iterator = first;
+    iterator = _head;
   while (iterator->next != NULL) {
     iterator = iterator->next;
   }
@@ -34,7 +36,7 @@ static void errorLog(const char *string) {
 }
 
 void flush() {
-  struct Node *node = first;
+  struct Node *node = _head;
   while (node != NULL) {
     errorLog(node->string);
     node = node->next;
