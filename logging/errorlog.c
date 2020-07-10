@@ -11,34 +11,47 @@ struct Node {
 static struct Node *_head = NULL;
 
 static struct Node *createNode(const char *string) {
-  struct Node *node;
-  node = (struct Node *) malloc(sizeof(struct Node));
-  node->next = NULL;
-  strncpy(node->string, string, MAX_ERROR_LENGTH);
-  return node;
+    struct Node *node;
+    node = (struct Node *) malloc(sizeof(struct Node));
+    node->next = NULL;
+    strncpy(node->string, string, MAX_ERROR_LENGTH);
+    return node;
 }
 
-void logError(const char *error) {
-  struct Node *added = createNode(error);
-  struct Node *iterator = NULL;
-  if(_head == NULL) {
-      _head = createNode("Errors:");
-  }
+void logError(int lineNumber, char *errorStr) {
+    char errorWithLine[MAX_ERROR_LENGTH + 10];
+    struct Node *added;
+    struct Node *iterator = NULL;
+    sprintf(errorStr, "%d: %s", lineNumber, errorStr);
+    added = createNode(errorWithLine);
+    if (_head == NULL) {
+        _head = createNode("Errors:");
+    }
     iterator = _head;
-  while (iterator->next != NULL) {
-    iterator = iterator->next;
-  }
-  iterator->next = added;
+    while (iterator->next != NULL) {
+        iterator = iterator->next;
+    }
+    iterator->next = added;
 }
 
 static void errorLog(const char *string) {
-  fprintf(stderr, "%s\n", string);
+    fprintf(stderr, "%s\n", string);
+}
+
+int numErrors() {
+    struct Node *node = _head;
+    int counter = 0;
+    while (node != NULL) {
+        node = node->next;
+        counter++;
+    }
+    return counter;
 }
 
 void flush() {
-  struct Node *node = _head;
-  while (node != NULL) {
-    errorLog(node->string);
-    node = node->next;
-  }
+    struct Node *node = _head;
+    while (node != NULL) {
+        errorLog(node->string);
+        node = node->next;
+    }
 }
