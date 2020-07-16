@@ -1,31 +1,6 @@
 #include <stdio.h>
 #include "assembler.h"
 
-/* Maximum amount of parameters in any function */
-#define MAX_PARAMS 3
-/* Maximum amount of tokens from any line*/
-#define MAX_TOKENS 6
-
-int processAssemblyFile(char *string);
-
-int firstPass(char *fileName);
-
-int secondPass(char *fileName);
-
-int handleCmdLabelFirstPass(DissectedLine dissectedLine);
-
-void initializeFirstPass();
-
-int handleDirective(DissectedLine dissectedLine);
-
-int handleDirectiveLabelFirstPass(DissectedLine line);
-
-int handleCommand(DissectedLine dissectedLine);
-
-int dissectCommand(char *commandStr, CommandTokens *parsedCommand);
-
-int findCommandInTable(CommandTokens tokens, Command command);
-
 int main(int argc, char **argv) {
     int i = 0;
     for (i = 1; i < argc; ++i) {

@@ -4,6 +4,7 @@
 /* Maximum length of a line from the input */
 #define MAX_LINE_LENGTH 200
 #define MAX_CMD_LENGTH 10
+#define MAX_LABEL_LENGTH 31
 
 enum LineType {
     LT_COMMENT,
@@ -40,5 +41,32 @@ int dissectLabel(char* rawLine, DissectedLine* dissectedLine);
  * @return
  */
 int dissectCommand(char *commandStr, CommandTokens *parsedCommand);
+
+
+/* Maximum amount of parameters in any function */
+#define MAX_PARAMS 3
+/* Maximum amount of tokens from any line*/
+#define MAX_TOKENS 6
+
+int processAssemblyFile(char *string);
+
+int firstPass(char *fileName);
+
+int secondPass(char *fileName);
+
+int handleCmdLabelFirstPass(DissectedLine dissectedLine);
+
+void initializeFirstPass();
+
+int handleDirective(DissectedLine dissectedLine);
+
+int handleDirectiveLabelFirstPass(DissectedLine line);
+
+int handleCommand(DissectedLine dissectedLine);
+
+int dissectCommand(char *commandStr, CommandTokens *parsedCommand);
+
+int findCommandInTable(CommandTokens tokens, Command command);
+
 
 #endif /*ASSEMBLER_ASSEMBLER_H*/
