@@ -15,16 +15,16 @@
 
 int dissectLabel(char* rawLine, DissectedLine* dissectedLine) {
   char *accumulator;
-  char* label = "";
-  char* command = "";
-  char* iterator = rawLine;
+  char *label = "";
+  char *command = "";
+  char *iterator = rawLine;
   int index = 0;
   enum LineType lineType = LT_COMMENT;
   /* strip leading whitespace */
-  while(WHT(*iterator)) {
+  while (WHT(*iterator)) {
     iterator = iterator + 1;
   }
-  if(EQ(*iterator, ';') || EOL(*iterator)) {
+  if (EQ(*iterator, ';') || EOL(*iterator)) {
     strcpy(dissectedLine->command, "");
     strcpy(dissectedLine->label, "");
     dissectedLine->lineType = LT_COMMENT;
@@ -32,8 +32,8 @@ int dissectLabel(char* rawLine, DissectedLine* dissectedLine) {
   }
   accumulator = malloc(sizeof(char[MAX_LINE_LENGTH]));
   index = 0;
-  while(!(END(*iterator))) {
-    if(*iterator == ':') {
+  while (!(END(*iterator))) {
+    if (*iterator == ':') {
       strcpy(dissectedLine->label, accumulator);
       accumulator = malloc(sizeof(char[MAX_LINE_LENGTH]));
       index = 0;
@@ -44,5 +44,8 @@ int dissectLabel(char* rawLine, DissectedLine* dissectedLine) {
     iterator++;
   }
   strcpy(dissectedLine->command, accumulator);
+  if(dissectedLine->command[0] == '.') {
+    dissectedLine->lineType = LT_DIRECTIVE;
+  }
   return 0;
 }
