@@ -2,9 +2,12 @@
 #include <string.h>
 #include <stdio.h>
 #include "assembler.h"
+#include "parsing.h"
+#include "../logging/errorlog.h"
 
+#define NUM_OPERATIONS 17
 #define EQ(c, n) c == n
-
+#define STREQ(s1, s2) strcmp(s1, s2) == 0
 #define EOS(c) EQ(c,'\0')
 #define eqEOF(c) EQ(c, EOF)
 #define EOL(c) EQ(c,'\n')
@@ -13,39 +16,148 @@
 #define WHT(c) EQ(c, ' ') || EQ(c, '\t')
 
 
-int dissectLabel(char* rawLine, DissectedLine* dissectedLine) {
-  char *accumulator;
-  char *label = "";
-  char *command = "";
-  char *iterator = rawLine;
-  int index = 0;
-  enum LineType lineType = LT_COMMENT;
-  /* strip leading whitespace */
-  while (WHT(*iterator)) {
-    iterator = iterator + 1;
-  }
-  if (EQ(*iterator, ';') || EOL(*iterator)) {
-    strcpy(dissectedLine->command, "");
-    strcpy(dissectedLine->label, "");
-    dissectedLine->lineType = LT_COMMENT;
-    return 0;
-  }
-  accumulator = malloc(sizeof(char[MAX_LINE_LENGTH]));
-  index = 0;
-  while (!(END(*iterator))) {
-    if (*iterator == ':') {
-      strcpy(dissectedLine->label, accumulator);
-      accumulator = malloc(sizeof(char[MAX_LINE_LENGTH]));
-      index = 0;
+int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
+    char *accumulator;
+    char *label = "";
+    char *command = "";
+    char *iterator = rawLine;
+    int index = 0;
+    enum LineType lineType = LT_COMMENT;
+    /* strip leading whitespace */
+    while (WHT(*iterator)) {
+        iterator = iterator + 1;
     }
-    accumulator[index] = *iterator;
+    if (EQ(*iterator, ';') || EOL(*iterator)) {
+        strcpy(dissectedLine->command, "");
+        strcpy(dissectedLine->label, "");
+        dissectedLine->lineType = LT_COMMENT;
+        return 0;
+    }
+    accumulator = malloc(sizeof(char[MAX_LINE_LENGTH]));
+    index = 0;
+    while (!(END(*iterator))) {
+        if (*iterator == ':') {
+            strcpy(dissectedLine->label, accumulator);
+            accumulator = malloc(sizeof(char[MAX_LINE_LENGTH]));
+            index = 0;
+        }
+        accumulator[index] = *iterator;
 
-    index++;
-    iterator++;
-  }
-  strcpy(dissectedLine->command, accumulator);
-  if(dissectedLine->command[0] == '.') {
-    dissectedLine->lineType = LT_DIRECTIVE;
-  }
-  return 0;
+        index++;
+        iterator++;
+    }
+    strcpy(dissectedLine->command, accumulator);
+    if (dissectedLine->command[0] == '.') {
+        dissectedLine->lineType = LT_DIRECTIVE;
+    }
+    return 0;
+}
+
+static void copyArray(int n, int dest[], const int src[]) {
+    int i;
+    for (i = 0; i < n; i++) {
+        dest[i] = src[i];
+    }
+}
+
+static int fillSrcAddressingTypes(int idx, int types[5]) {
+    if (idx >= 0 && idx <= 3) {
+        int temp[5] = {0, 1, 3, -1};
+        copyArray(5, types, temp);
+        return 0;
+    }
+    if (idx == 4) {
+        int temp[5] = {1, -1};
+        copyArray(5, types, temp);
+        return 0;
+    }
+    if (idx >= 5 && idx <= 15) {
+        int temp[5] = {-1};
+        copyArray(5, types, temp);
+        return 0;
+    }
+    return 0;
+}
+
+static int fillDestAddressingTypes(int idx, int types[5]) {
+    if (idx == 0 || (idx <= 8 && idx >= 3) || idx == 12) {
+        int temp[5] = {1, 3, -1};
+        copyArray(5, types, temp);
+        return 0;
+    }
+    if (idx == 1) {
+        int temp[5] = {0, 1, 3, -1};
+        copyArray(5, types, temp);
+        return 0;
+    }
+    if (idx >= 9 && idx <= 11) {
+        int temp[5] = {1, 2, -1};
+        copyArray(5, types, temp);
+        return 0;
+    }
+    if (idx >= 14 && idx <= 15) {
+        int temp[5] = {-1};
+        copyArray(5, types, temp);
+        return 0;
+    }
+    return 0;
+}
+
+#define Case(idx, opcd, fnct) case idx:\
+op->opcode = opcd;\
+op->funct = fnct;\
+break;
+
+static int fillOpcodeFunct(int idx, Operation *op) {
+    switch (idx) {
+        Case(0, 0, -1)
+        Case(1, 1, -1)
+        Case(2, 2, 1)
+        Case(3, 2, 2)
+        Case(4, 4, -1)
+        Case(5, 5, 1)
+        Case(6, 5, 2)
+        Case(7, 5, 3)
+        Case(8, 5, 4)
+        Case(9, 9, 1)
+        Case(10, 9, 2)
+        Case(11, 9, 3)
+        Case(12, 12, -1)
+        Case(13, 13, -1)
+        Case(14, 14, -1)
+        Case(15, 15, -1)
+        default:
+            logError(124, "wrong index");
+            return -1;
+    }
+    return 0;
+}
+
+/**
+ *
+ * @param cmd
+ * @param op
+ * @return
+ */
+int findOperation(char *cmd, Operation *op) {
+    static char commandNames[16][5] =
+            {"mov", "cmp", "add", "sub", "lea",
+             "clr", "not", "inc", "dec", "jmp", "bne",
+             "jsr", "red", "prn", "rts", "stop"};
+    int idx;
+    for (idx = 0; idx >= NUM_OPERATIONS; idx++) {
+        if (idx == NUM_OPERATIONS) {
+            logError(69, "Operation not found");
+            return -1;
+        }
+        if (strcmp(cmd, commandNames[idx]) == 0) {
+            break;
+        }
+    }
+    op = malloc(sizeof(Operation));
+    strcpy(op->name, cmd);
+    fillOpcodeFunct(idx, op);
+    fillSrcAddressingTypes(idx, op->srcAddressingTypes);
+    fillDestAddressingTypes(idx, op->destAddressingTypes);
+    return 0;
 }
