@@ -18,6 +18,7 @@ typedef struct {
     char command[MAX_CMD_LENGTH];
     char arg1[MAX_LINE_LENGTH];
     char arg2[MAX_LINE_LENGTH];
+    int numArgs;
 } CommandTokens;
 
 typedef struct {

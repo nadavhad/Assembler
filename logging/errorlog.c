@@ -22,7 +22,7 @@ void logError(int lineNumber, char *errorStr) {
     char errorWithLine[MAX_ERROR_LENGTH + 10];
     struct Node *added;
     struct Node *iterator = NULL;
-    sprintf(errorStr, "%d: %s", lineNumber, errorStr);
+    sprintf(errorWithLine, "%d: %s", lineNumber, errorStr);
     added = createNode(errorWithLine);
     if (_head == NULL) {
         _head = createNode("Errors:");

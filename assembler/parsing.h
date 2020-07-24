@@ -17,7 +17,7 @@ int dissectLabel(char *, DissectedLine *);
  * Splits a command string into a command and its arguments
  * @return
  */
-int dissectCommand(char *, CommandTokens *);
+int dissectCommand(char *line, int lineNumber, CommandTokens *);
 
 int findOperation(char *, Operation *);
 

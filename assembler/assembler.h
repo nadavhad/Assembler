@@ -18,7 +18,7 @@ int handleDirective(DissectedLine dissectedLine);
 
 int handleDirectiveLabelFirstPass(DissectedLine line);
 
-int handleCommand(DissectedLine dissectedLine);
+int handleCommand(DissectedLine dissectedLine, int lineNumber);
 
 
 #endif /*ASSEMBLER_ASSEMBLER_H*/

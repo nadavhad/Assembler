@@ -4,4 +4,4 @@
 void logError(int lineNumber, char *errorStr);
 void flush();
 int numErrors();
-#endif //ASSEMBLER_ERRORLOG_H
+#endif /*ASSEMBLER_ERRORLOG_H*/
