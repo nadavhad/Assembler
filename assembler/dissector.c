@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "assembler.h"
+//#include "assembler.h"
 #include "parsing.h"
 #include "../logging/errorlog.h"
 
@@ -28,6 +28,7 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
         iterator = iterator + 1;
     }
     if (EQ(*iterator, ';') || EOL(*iterator)) {
+        /* if comment/empty, fill&exit.*/
         strcpy(dissectedLine->command, "");
         strcpy(dissectedLine->label, "");
         dissectedLine->lineType = LT_COMMENT;
@@ -36,7 +37,9 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
     accumulator = malloc(sizeof(char[MAX_LINE_LENGTH]));
     index = 0;
     while (!(END(*iterator))) {
+        /* accumulate until reaching end or colon, assign accumulator accordingly*/
         if (*iterator == ':') {
+            /* if has a label, fill label field with accumulator and reset accumulator */
             strcpy(dissectedLine->label, accumulator);
             accumulator = malloc(sizeof(char[MAX_LINE_LENGTH]));
             index = 0;
@@ -49,10 +52,14 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
     strcpy(dissectedLine->command, accumulator);
     if (dissectedLine->command[0] == '.') {
         dissectedLine->lineType = LT_DIRECTIVE;
+        /* TODO: handle directives*/
     }
     return 0;
 }
 
+/*
+ * Utility functions & macro for findOperation
+ */
 static void copyArray(int n, int dest[], const int src[]) {
     int i;
     for (i = 0; i < n; i++) {
@@ -133,12 +140,7 @@ static int fillOpcodeFunct(int idx, Operation *op) {
     return 0;
 }
 
-/**
- *
- * @param cmd
- * @param op
- * @return
- */
+
 int findOperation(char *cmd, Operation *op) {
     static char commandNames[16][5] =
             {"mov", "cmp", "add", "sub", "lea",

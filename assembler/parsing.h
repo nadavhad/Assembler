@@ -19,8 +19,16 @@ int dissectLabel(char *, DissectedLine *);
  */
 int dissectCommand(char *line, int lineNumber, CommandTokens *);
 
+/**
+ * Finds what operation it is, fills the Operation struct with relevant data.
+ * @return 0 on success, -1 on failure
+ */
 int findOperation(char *, Operation *);
 
+/**
+ * Possible duplicate of findOperation(char*, Operation*)
+ * @return
+ */
 int findCommandInTable(CommandTokens, Command);
 
 

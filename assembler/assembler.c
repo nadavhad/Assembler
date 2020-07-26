@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include "assembler.h"
-#include "errorlog.h"
 #include <string.h>
+#include "assembler.h"
+#include "../logging/errorlog.h"
 
 int main(int argc, char **argv) {
     int i = 0;
@@ -237,12 +237,12 @@ int handleDirectiveLabelFirstPass(DissectedLine line) {
 }
 
 int findCommandInTable(CommandTokens tokens, Command command) {
-    /*TODO(nadav): Implement*/
+    /*TODO(nadav): Implement. Possible duplicate of findOperation?*/
     return 0;
 }
 
 /*************************
- *  Sceond pass
+ *  Second pass
  */
 int secondPass(char *fileName) {
     /* TODO(nadav): Open file*/
