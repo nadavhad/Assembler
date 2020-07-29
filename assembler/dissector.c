@@ -1,13 +1,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-//#include "assembler.h"
 #include "parsing.h"
 #include "../logging/errorlog.h"
+#include <ctype.h>
 
 #define NUM_OPERATIONS 17
 #define EQ(c, n) c == n
-#define STREQ(s1, s2) strcmp(s1, s2) == 0
 #define EOS(c) EQ(c,'\0')
 #define eqEOF(c) EQ(c, EOF)
 #define EOL(c) EQ(c,'\n')
@@ -15,6 +14,43 @@
 #define END(c) EOS(c) || eqEOF(c) || EOL(c)
 #define WHT(c) EQ(c, ' ') || EQ(c, '\t')
 
+
+int findArgumentAddressingType(const char* arg) {
+    switch(arg[0]) {
+        case 'r':
+            if(('0' <= arg[1] && arg[1] <= '7') && (*(arg + 2) == '\0')) {
+                return AT_REGISTER;
+            }
+            else {
+                char* errormsg = "Attempted access to undefined register: ";
+                strcat(errormsg, arg);
+                logError(-1, errormsg);
+                return -1;
+            }
+        case '#':
+            int i = 1;
+            while(isdigit(*(arg+i))) {
+                i++;
+            }
+            if(*(arg+i) != '\0') {
+                char* errormsg = "Argument addressed with # must be a number, not: ";
+                strcat(errormsg, arg);
+                logError(-1, errormsg);
+                return -1;
+            }
+            else return AT_IMMEDIATE;
+        case '&':
+            if(!isLabel(arg)) {
+                char* errormsg = "Argument addressed with & must be a label, cannot find label: ";
+                strcat(errormsg, arg);
+                logError(-1, errormsg);
+                return -1;
+            }
+            else return AT_RELATIVE;
+        default:
+            return AT_DIRECT;
+    }
+}
 
 int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
     char *accumulator;
@@ -139,7 +175,6 @@ static int fillOpcodeFunct(int idx, Operation *op) {
     }
     return 0;
 }
-
 
 int findOperation(char *cmd, Operation *op) {
     static char commandNames[16][5] =

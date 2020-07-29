@@ -31,5 +31,11 @@ int findOperation(char *, Operation *);
  */
 int findCommandInTable(CommandTokens, Command);
 
+/**
+ * Finds the addressing type of the argument, and checks its validity.
+ * @return addressing type (0..3), or -1 on error/mismatch
+ */
+int findArgumentAddressingType(const char*);
+
 
 #endif /*ASSEMBLER_PARSING_H*/
