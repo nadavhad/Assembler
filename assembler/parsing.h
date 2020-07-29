@@ -3,6 +3,11 @@
 #ifndef ASSEMBLER_PARSING_H
 #define ASSEMBLER_PARSING_H
 
+/**
+ * Declares that a certain label should exist. If doesn't exist, will error
+ * @return
+ */
+int requiresLabel(const char *);
 
 /**
  * Splits a line of assembly code into a struct containing the label and command (with its args)
@@ -25,17 +30,12 @@ int dissectCommand(char *line, int lineNumber, CommandTokens *);
  */
 int findOperation(char *, Operation *);
 
-/**
- * Possible duplicate of findOperation(char*, Operation*)
- * @return
- */
-int findCommandInTable(CommandTokens, Command);
 
 /**
  * Finds the addressing type of the argument, and checks its validity.
  * @return addressing type (0..3), or -1 on error/mismatch
  */
-int findArgumentAddressingType(const char*);
+int findArgumentAddressingType(const char *);
 
 
 #endif /*ASSEMBLER_PARSING_H*/

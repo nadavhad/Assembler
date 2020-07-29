@@ -34,8 +34,8 @@ typedef struct {
     int opcode;
     int funct;
     char name[5];
-    int srcAddressingTypes[5];
-    int destAddressingTypes[5];
+    int srcAddressing[5];
+    int destAddressing[5];
 } Operation;
 
 #endif /*ASSEMBLER_STRUCTS_H*/
