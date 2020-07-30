@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "structs.h"
 #include "assembler.h"
@@ -89,22 +90,13 @@ int handleCmdLabelFirstPass(DissectedLine dissectedLine) {
     /*TODO: Implement*/
 }
 
-int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
-    dissectedLine->label[0] = 0;
-    strncpy(dissectedLine->command, rawLine, 200);
-    dissectedLine->lineType = LT_COMMAND;
-    return 0;
-    /*TODO: Implement*/
-}
-
-
 int handleCommand(DissectedLine dissectedLine) {
     CommandTokens commandTokens;
-    Operation command;
+    Operation *command = malloc(sizeof(Operation));
     if (dissectCommand(dissectedLine.command, &commandTokens) != 0) {
         return -1;
     }
-    if (findCommandInTable(commandTokens, command) != 0) {
+    if (findOperation(commandTokens.command, command) != 0) {
         return -1;
     }
 
@@ -259,7 +251,7 @@ int secondPass(char *fileName) {
         return -1;
     }
     while (1) {
-        if (fgets(line, MAX_LINE_LENGTH, stdin) == NULL) {
+        if (fgets(line, MAX_LINE_LENGTH, file) == NULL) {
             /* We got to the end of a file. */
             fclose(file);
             return 0;
@@ -267,3 +259,6 @@ int secondPass(char *fileName) {
     }
 }
 
+int requiresLabel(const char *label) {
+    return 0;
+}

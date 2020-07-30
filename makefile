@@ -1,6 +1,6 @@
-assembler.out: out/errorlog.o out/assembler.o out/state.o
+assembler.out: out/errorlog.o out/assembler.o out/state.o out/dissector.o
 	mkdir -p out
-	gcc -g  -Wall -ansi -pedantic out/errorlog.o out/assembler.o out/state.o -o out/assembler.out
+	gcc -g  -Wall -ansi -pedantic out/errorlog.o out/assembler.o out/state.o out/dissector.o -o out/assembler.out
 
 out/errorlog.o: logging/errorlog.c logging/errorlog.h
 	mkdir -p out
@@ -21,7 +21,5 @@ out/state.o: assembler/state.c assembler/structs.h assembler/state.h
 
 clean:
 	rm -rf out/*
-
-
 
 $(V).SILENT:
