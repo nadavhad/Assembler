@@ -15,4 +15,14 @@ void flush();
  * @return
  */
 int numErrors();
+
+/**
+ * A macro representing an error clause/block based on an illegal argument
+ */
+#define ERROR_ARG(msg, arg) {\
+                char errormsg[100] = msg;\
+                strcat(errormsg, arg);\
+                logError(-1, errormsg);\
+                return -1;\
+            }
 #endif /*ASSEMBLER_ERRORLOG_H*/
