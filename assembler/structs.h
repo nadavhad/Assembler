@@ -21,11 +21,6 @@ typedef struct {
     int numArgs;
 } CommandTokens;
 
-typedef struct {
-    int deleteThis;
-    /*TODO(nadav): Define contents*/
-} Command;
-
 enum AddressingType {
     AT_IMMEDIATE, AT_DIRECT, AT_RELATIVE, AT_REGISTER
 };
@@ -37,5 +32,11 @@ typedef struct {
     int srcAddressingTypes[5];
     int destAddressingTypes[5];
 } Operation;
+
+typedef struct {
+    int lineNumber;
+    int IC;
+    int DC;
+} State;
 
 #endif /*ASSEMBLER_STRUCTS_H*/

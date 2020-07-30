@@ -17,7 +17,7 @@ int dissectLabel(char *, DissectedLine *);
  * Splits a command string into a command and its arguments
  * @return
  */
-int dissectCommand(char *line, int lineNumber, CommandTokens *);
+int dissectCommand(char *line, CommandTokens *);
 
 /**
  * Finds what operation it is, fills the Operation struct with relevant data.
@@ -29,7 +29,7 @@ int findOperation(char *, Operation *);
  * Possible duplicate of findOperation(char*, Operation*)
  * @return
  */
-int findCommandInTable(CommandTokens, Command);
+int findCommandInTable(CommandTokens, Operation);
 
 /**
  * Finds the addressing type of the argument, and checks its validity.

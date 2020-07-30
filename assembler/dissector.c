@@ -16,6 +16,7 @@
 
 
 int findArgumentAddressingType(const char* arg) {
+    int i;
     switch(arg[0]) {
         case 'r':
             if(('0' <= arg[1] && arg[1] <= '7') && (*(arg + 2) == '\0')) {
@@ -28,7 +29,7 @@ int findArgumentAddressingType(const char* arg) {
                 return -1;
             }
         case '#':
-            int i = 1;
+            i = 1;
             while(isdigit(*(arg+i))) {
                 i++;
             }
@@ -198,3 +199,21 @@ int findOperation(char *cmd, Operation *op) {
     fillDestAddressingTypes(idx, op->destAddressingTypes);
     return 0;
 }
+
+Operation xxx[] = {
+        /*
+        op  funct name    src addressing       dst addressing
+         */
+        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
+        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
+        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
+        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
+        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
+        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
+        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
+        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
+        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
+        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
+        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
+        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
+};

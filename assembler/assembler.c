@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+#include "structs.h"
 #include "assembler.h"
+#include "state.h"
 #include "../logging/errorlog.h"
 
 int main(int argc, char **argv) {
@@ -34,11 +36,12 @@ int processAssemblyFile(char *fileName) {
 /*************************
  *  First pass
  */
+
 int firstPass(char *fileName) {
     FILE *file;
     char line[MAX_LINE_LENGTH];
     DissectedLine dissectedLine;
-    int lineNumber = 0;
+    getState()->lineNumber = 0;
     file = fopen(fileName, "r");
     if (file == NULL) {
         perror(fileName);
@@ -52,14 +55,14 @@ int firstPass(char *fileName) {
             fclose(file);
             return 0;
         }
-        lineNumber++;
+        getState()->lineNumber++;
         dissectLabel(line, &dissectedLine);
         switch (dissectedLine.lineType) {
             case LT_COMMENT:
                 break;
             case LT_COMMAND:
                 handleCmdLabelFirstPass(dissectedLine);
-                handleCommand(dissectedLine, lineNumber);
+                handleCommand(dissectedLine);
                 break;
             case LT_DIRECTIVE:
                 handleDirectiveLabelFirstPass(dissectedLine);
@@ -95,15 +98,17 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
 }
 
 
-int handleCommand(DissectedLine dissectedLine, int lineNumber) {
+int handleCommand(DissectedLine dissectedLine) {
     CommandTokens commandTokens;
-    Command command;
-    if (dissectCommand(dissectedLine.command, lineNumber, &commandTokens) != 0) {
+    Operation command;
+    if (dissectCommand(dissectedLine.command, &commandTokens) != 0) {
         return -1;
     }
     if (findCommandInTable(commandTokens, command) != 0) {
         return -1;
     }
+
+
     /*
      * TODO:
      * 1. Look for the command in table
@@ -118,7 +123,7 @@ int handleCommand(DissectedLine dissectedLine, int lineNumber) {
 }
 
 /* Split the input to the command and the parameters. Also removes redundant white spaces. */
-int splitCommandAndParams(char *line, int lineNumber, char *token, char *remainder) {
+int splitCommandAndParams(char *line, char *token, char *remainder) {
     char parts[MAX_TOKENS + 1][MAX_LINE_LENGTH];
     int i;
     /*
@@ -133,12 +138,12 @@ int splitCommandAndParams(char *line, int lineNumber, char *token, char *remaind
     }
     /* Check if the last character in the command token is a comma */
     if (token[strlen(token) - 1] == ',') {
-        logError(lineNumber, "Illegal comma");
+        logError(getState()->lineNumber, "Illegal comma");
         return -1;
     }
     /* If n > MAX_TOKENS it means we got more text than the maximum text expected*/
     if (n > MAX_TOKENS) {
-        logError(lineNumber, "Extraneous text after end of command");
+        logError(getState()->lineNumber, "Extraneous text after end of command");
         return -1;
     }
     remainder[0] = 0;
@@ -146,7 +151,7 @@ int splitCommandAndParams(char *line, int lineNumber, char *token, char *remaind
     for (i = 0; i < n - 1; i++) {
         int len = strlen(remainder);
         if ((len != 0) && (remainder[len - 1] != ',') && (parts[i][0] != ',')) {
-            logError(lineNumber, "Missing comma");
+            logError(getState()->lineNumber, "Missing comma");
             return -1;
         }
         strcat(remainder, parts[i]);
@@ -154,7 +159,7 @@ int splitCommandAndParams(char *line, int lineNumber, char *token, char *remaind
     return 0;
 }
 
-int tokenizeParams(char *remainder, int lineNumber, CommandTokens *parsedCommand) {
+int tokenizeParams(char *remainder, CommandTokens *parsedCommand) {
     int charIndex = 0;
     char *currArg;
     /* Start with all empty tokens. */
@@ -164,7 +169,7 @@ int tokenizeParams(char *remainder, int lineNumber, CommandTokens *parsedCommand
     parsedCommand->numArgs = 0;
     while (*remainder != 0) {
         if (parsedCommand->numArgs > MAX_PARAMS - 1) { /* We have an extra parameter after the last valid token. */
-            logError(lineNumber, "Extraneous text after end of command");
+            logError(getState()->lineNumber, "Extraneous text after end of command");
             return -1;
         }
         if (*remainder == ',') {
@@ -173,11 +178,11 @@ int tokenizeParams(char *remainder, int lineNumber, CommandTokens *parsedCommand
                 /* Beginning of token - Must be an error */
                 if (parsedCommand->numArgs == 0) {
                     /* First token starts with a comma. */
-                    logError(lineNumber, "Illegal comma");
+                    logError(getState()->lineNumber, "Illegal comma");
                     return -1;
                 }
                 /* Some other (not first) token starts with a comma. We have two consecutive commas. */
-                logError(lineNumber, "Multiple consecutive commas");
+                logError(getState()->lineNumber, "Multiple consecutive commas");
                 return -1;
             }
             /* Closing the token */
@@ -195,7 +200,7 @@ int tokenizeParams(char *remainder, int lineNumber, CommandTokens *parsedCommand
     }
     /* We have an extra parameter after the last valid token. */
     if (parsedCommand->numArgs > MAX_PARAMS - 1) {
-        logError(lineNumber, "Extraneous text after end of command");
+        logError(getState()->lineNumber, "Extraneous text after end of command");
         return -1;
     }
     if (charIndex > 0) {
@@ -205,16 +210,16 @@ int tokenizeParams(char *remainder, int lineNumber, CommandTokens *parsedCommand
     return 0;
 }
 
-int dissectCommand(char *commandStr, int lineNumber, CommandTokens *parsedCommand) {
+int dissectCommand(char *commandStr, CommandTokens *parsedCommand) {
     /* 1. Check command structure (tokens, command, number of arguments)
      * 2. Split line to tokens: CommandTokens, argument1, argument2
      * */
     char remainder[MAX_LINE_LENGTH];
-    if (splitCommandAndParams(commandStr, lineNumber, parsedCommand->command, remainder) < 0) {
+    if (splitCommandAndParams(commandStr, parsedCommand->command, remainder) < 0) {
         /* There was an error in the input */
         return -1;
     }
-    if (tokenizeParams(remainder, lineNumber, parsedCommand) < 0) { /* There was an error in the input */
+    if (tokenizeParams(remainder, parsedCommand) < 0) { /* There was an error in the input */
         return -1;
     }
     return 0;
@@ -236,7 +241,7 @@ int handleDirectiveLabelFirstPass(DissectedLine line) {
     /*TODO: Implement*/
 }
 
-int findCommandInTable(CommandTokens tokens, Command command) {
+int findCommandInTable(CommandTokens tokens, Operation command) {
     /*TODO(nadav): Implement. Possible duplicate of findOperation?*/
     return 0;
 }
