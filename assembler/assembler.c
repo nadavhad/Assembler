@@ -42,7 +42,7 @@ int firstPass(char *fileName) {
     FILE *file;
     char line[MAX_LINE_LENGTH];
     DissectedLine dissectedLine;
-    getState()->lineNumber = 0;
+    LINE_NUMBER = 0;
     file = fopen(fileName, "r");
     if (file == NULL) {
         perror(fileName);
@@ -56,7 +56,7 @@ int firstPass(char *fileName) {
             fclose(file);
             return 0;
         }
-        getState()->lineNumber++;
+        LINE_NUMBER++;
         dissectLabel(line, &dissectedLine);
         switch (dissectedLine.lineType) {
             case LT_COMMENT:
@@ -130,12 +130,12 @@ int splitCommandAndParams(char *line, char *token, char *remainder) {
     }
     /* Check if the last character in the command token is a comma */
     if (token[strlen(token) - 1] == ',') {
-        logError(getState()->lineNumber, "Illegal comma");
+        logError(LINE_NUMBER, "Illegal comma");
         return -1;
     }
     /* If n > MAX_TOKENS it means we got more text than the maximum text expected*/
     if (n > MAX_TOKENS) {
-        logError(getState()->lineNumber, "Extraneous text after end of command");
+        logError(LINE_NUMBER, "Extraneous text after end of command");
         return -1;
     }
     remainder[0] = 0;
@@ -143,7 +143,7 @@ int splitCommandAndParams(char *line, char *token, char *remainder) {
     for (i = 0; i < n - 1; i++) {
         int len = strlen(remainder);
         if ((len != 0) && (remainder[len - 1] != ',') && (parts[i][0] != ',')) {
-            logError(getState()->lineNumber, "Missing comma");
+            logError(LINE_NUMBER, "Missing comma");
             return -1;
         }
         strcat(remainder, parts[i]);
@@ -161,7 +161,7 @@ int tokenizeParams(char *remainder, CommandTokens *parsedCommand) {
     parsedCommand->numArgs = 0;
     while (*remainder != 0) {
         if (parsedCommand->numArgs > MAX_PARAMS - 1) { /* We have an extra parameter after the last valid token. */
-            logError(getState()->lineNumber, "Extraneous text after end of command");
+            logError(LINE_NUMBER, "Extraneous text after end of command");
             return -1;
         }
         if (*remainder == ',') {
@@ -170,11 +170,11 @@ int tokenizeParams(char *remainder, CommandTokens *parsedCommand) {
                 /* Beginning of token - Must be an error */
                 if (parsedCommand->numArgs == 0) {
                     /* First token starts with a comma. */
-                    logError(getState()->lineNumber, "Illegal comma");
+                    logError(LINE_NUMBER, "Illegal comma");
                     return -1;
                 }
                 /* Some other (not first) token starts with a comma. We have two consecutive commas. */
-                logError(getState()->lineNumber, "Multiple consecutive commas");
+                logError(LINE_NUMBER, "Multiple consecutive commas");
                 return -1;
             }
             /* Closing the token */
@@ -192,7 +192,7 @@ int tokenizeParams(char *remainder, CommandTokens *parsedCommand) {
     }
     /* We have an extra parameter after the last valid token. */
     if (parsedCommand->numArgs > MAX_PARAMS - 1) {
-        logError(getState()->lineNumber, "Extraneous text after end of command");
+        logError(LINE_NUMBER, "Extraneous text after end of command");
         return -1;
     }
     if (charIndex > 0) {
