@@ -19,6 +19,7 @@ int processAssemblyFile(char *fileName) {
     if (firstPass(fileName) != 0) {
         return -1;
     }
+
     if (numErrors() > 0) {
         flush();
         return -1;
@@ -42,14 +43,12 @@ int firstPass(char *fileName) {
     FILE *file;
     char line[MAX_LINE_LENGTH];
     DissectedLine dissectedLine;
-    getState()->lineNumber = 0;
     file = fopen(fileName, "r");
     if (file == NULL) {
         perror(fileName);
         return -1;
     }
     initializeFirstPass();
-
     while (1) {
         if (fgets(line, MAX_LINE_LENGTH, file) == NULL) {
             /* We got to the end of a file. */
@@ -58,6 +57,7 @@ int firstPass(char *fileName) {
         }
         getState()->lineNumber++;
         dissectLabel(line, &dissectedLine);
+
         switch (dissectedLine.lineType) {
             case LT_COMMENT:
                 break;
@@ -71,6 +71,7 @@ int firstPass(char *fileName) {
                 break;
         }
     }
+
     /*TODO:
      * 1. If found errors: print and stop
      * 2. Store ICF, DCF
@@ -79,6 +80,7 @@ int firstPass(char *fileName) {
 }
 
 void initializeFirstPass() {
+    getState()->lineNumber = 0;
     /*TODO: Implement*/
 }
 
@@ -102,7 +104,7 @@ int handleCmdLabelFirstPass(DissectedLine dissectedLine) {
 int handleCommand(DissectedLine dissectedLine) {
     CommandTokens commandTokens;
     Operation *command = malloc(sizeof(Operation));
-    if (dissectCommand(dissectedLine.command, lineNumber, &commandTokens) != 0) {
+    if (dissectCommand(dissectedLine.command, &commandTokens) != 0) {
         return -1;
     }
     if (findOperation(commandTokens.command, command) != 0) {
@@ -242,11 +244,6 @@ int handleDirectiveLabelFirstPass(DissectedLine line) {
     /*TODO: Implement*/
 }
 
-int findCommandInTable(CommandTokens tokens, Operation command) {
-    /*TODO(nadav): Implement. Possible duplicate of findOperation?*/
-    return 0;
-}
-
 /*************************
  *  Second pass
  */
@@ -260,7 +257,7 @@ int secondPass(char *fileName) {
         return -1;
     }
     while (1) {
-        if (fgets(line, MAX_LINE_LENGTH, stdin) == NULL) {
+        if (fgets(line, MAX_LINE_LENGTH, file) == NULL) {
             /* We got to the end of a file. */
             fclose(file);
             return 0;

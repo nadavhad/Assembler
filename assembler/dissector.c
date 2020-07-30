@@ -3,9 +3,10 @@
 #include <stdio.h>
 #include "parsing.h"
 #include "../logging/errorlog.h"
+#include "state.h"
 #include <ctype.h>
 
-#define NUM_OPERATIONS 17
+#define NUM_OPERATIONS 16
 #define EQ(c, n) c == n
 #define EOS(c) EQ(c,'\0')
 #define eqEOF(c) EQ(c, EOF)
@@ -54,6 +55,7 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
     char *accumulator;
     char *iterator = rawLine;
     int index = 0;
+
     /* strip leading whitespace */
     while (WHT(*iterator)) {
         iterator = iterator + 1;
@@ -84,6 +86,8 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
     if (dissectedLine->command[0] == '.') {
         dissectedLine->lineType = LT_DIRECTIVE;
         /* TODO: handle directives*/
+    } else {
+        dissectedLine->lineType = LT_COMMAND;
     }
     return 0;
 }
@@ -110,7 +114,7 @@ static Operation ops[NUM_OPERATIONS] = {
 
 int findOperation(char *cmd, Operation *op) {
     int i;
-    char *errormsg = "Undefined operation: ";
+    char errormsg[100] = "Undefined operation: ";
     for (i = 0; i < NUM_OPERATIONS; i++) {
         if (strcmp(cmd, ops[i].name) == 0) {
             (*op) = ops[i];
@@ -118,7 +122,7 @@ int findOperation(char *cmd, Operation *op) {
         }
     }
     strcat(errormsg, cmd);
-    logError(-1, errormsg);
+    logError(getState()->lineNumber, errormsg);
     return -1;
 }
 
