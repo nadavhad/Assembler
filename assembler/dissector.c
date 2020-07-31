@@ -7,14 +7,13 @@
 #include <ctype.h>
 
 #define NUM_OPERATIONS 16
-#define EQ(c, n) c == n
+#define EQ(c, n) ((c) == (n))
 #define EOS(c) EQ(c,'\0')
 #define eqEOF(c) EQ(c, EOF)
 #define EOL(c) EQ(c,'\n')
 
-#define END(c) EOS(c) || eqEOF(c) || EOL(c)
-#define WHT(c) EQ(c, ' ') || EQ(c, '\t')
-
+#define END(c) (EOS(c) || eqEOF(c) || EOL(c))
+#define WHT(c) (EQ(c, ' ') || EQ(c, '\t'))
 
 
 int findArgumentAddressingType(const char *arg) {
@@ -82,22 +81,22 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
 
 static Operation ops[NUM_OPERATIONS] = {
         /*op  fun  name   src addressing       dst addressing       */
-        {0,  -1, "mov",  {AT_IMMEDIATE,  AT_DIRECT,  AT_REGISTER,  AT_UNSET, AT_UNSET}, {AT_DIRECT,  AT_REGISTER,  AT_UNSET, AT_UNSET, AT_UNSET}, 2},
-        {1,  -1, "cmp",  {AT_IMMEDIATE,  AT_DIRECT,  AT_REGISTER,  AT_UNSET, AT_UNSET}, {AT_IMMEDIATE,  AT_DIRECT,  AT_REGISTER,  AT_UNSET, AT_UNSET}, 2},
-        {2,  1,  "add",  {AT_IMMEDIATE,  AT_DIRECT,  AT_REGISTER,  AT_UNSET, AT_UNSET}, {AT_DIRECT,  AT_REGISTER,  AT_UNSET, AT_UNSET, AT_UNSET}, 2},
-        {2,  2,  "sub",  {AT_IMMEDIATE,  AT_DIRECT,  AT_REGISTER,  AT_UNSET, AT_UNSET}, {AT_DIRECT,  AT_REGISTER,  AT_UNSET, AT_UNSET, AT_UNSET}, 2},
-        {4,  -1, "lea",  {AT_DIRECT,  AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET}, {AT_DIRECT,  AT_REGISTER,  AT_UNSET, AT_UNSET, AT_UNSET}, 2},
-        {5,  1,  "clr",  {AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET}, {AT_DIRECT,  AT_REGISTER,  AT_UNSET, AT_UNSET, AT_UNSET}, 1},
-        {5,  2,  "not",  {AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET}, {AT_DIRECT,  AT_REGISTER,  AT_UNSET, AT_UNSET, AT_UNSET}, 1},
-        {5,  3,  "inc",  {AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET}, {AT_DIRECT,  AT_REGISTER,  AT_UNSET, AT_UNSET, AT_UNSET}, 1},
-        {5,  4,  "dec",  {AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET}, {AT_DIRECT,  AT_REGISTER,  AT_UNSET, AT_UNSET, AT_UNSET}, 1},
-        {9,  1,  "jmp",  {AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET}, {AT_DIRECT,  AT_RELATIVE,  AT_UNSET, AT_UNSET, AT_UNSET}, 1},
-        {9,  2,  "bne",  {AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET}, {AT_DIRECT,  AT_RELATIVE,  AT_UNSET, AT_UNSET, AT_UNSET}, 1},
-        {9,  3,  "jsr",  {AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET}, {AT_DIRECT,  AT_RELATIVE,  AT_UNSET, AT_UNSET, AT_UNSET}, 1},
-        {12, -1, "red",  {AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET}, {AT_DIRECT,  AT_REGISTER,  AT_UNSET, AT_UNSET, AT_UNSET}, 1},
-        {13, -1, "prn",  {AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET}, {AT_IMMEDIATE,  AT_DIRECT,  AT_REGISTER,  AT_UNSET, AT_UNSET}, 1},
-        {14, -1, "rts",  {AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET}, {AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET}, 0},
-        {15, -1, "stop", {AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET}, {AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET, AT_UNSET}, 0}
+        {0,  -1, "mov",  {AT_IMMEDIATE, AT_DIRECT, AT_REGISTER, AT_UNSET, AT_UNSET}, {AT_DIRECT,    AT_REGISTER, AT_UNSET,    AT_UNSET, AT_UNSET}, 2},
+        {1,  -1, "cmp",  {AT_IMMEDIATE, AT_DIRECT, AT_REGISTER, AT_UNSET, AT_UNSET}, {AT_IMMEDIATE, AT_DIRECT,   AT_REGISTER, AT_UNSET, AT_UNSET}, 2},
+        {2,  1,  "add",  {AT_IMMEDIATE, AT_DIRECT, AT_REGISTER, AT_UNSET, AT_UNSET}, {AT_DIRECT,    AT_REGISTER, AT_UNSET,    AT_UNSET, AT_UNSET}, 2},
+        {2,  2,  "sub",  {AT_IMMEDIATE, AT_DIRECT, AT_REGISTER, AT_UNSET, AT_UNSET}, {AT_DIRECT,    AT_REGISTER, AT_UNSET,    AT_UNSET, AT_UNSET}, 2},
+        {4,  -1, "lea",  {AT_DIRECT,    AT_UNSET,  AT_UNSET,    AT_UNSET, AT_UNSET}, {AT_DIRECT,    AT_REGISTER, AT_UNSET,    AT_UNSET, AT_UNSET}, 2},
+        {5,  1,  "clr",  {AT_UNSET,     AT_UNSET,  AT_UNSET,    AT_UNSET, AT_UNSET}, {AT_DIRECT,    AT_REGISTER, AT_UNSET,    AT_UNSET, AT_UNSET}, 1},
+        {5,  2,  "not",  {AT_UNSET,     AT_UNSET,  AT_UNSET,    AT_UNSET, AT_UNSET}, {AT_DIRECT,    AT_REGISTER, AT_UNSET,    AT_UNSET, AT_UNSET}, 1},
+        {5,  3,  "inc",  {AT_UNSET,     AT_UNSET,  AT_UNSET,    AT_UNSET, AT_UNSET}, {AT_DIRECT,    AT_REGISTER, AT_UNSET,    AT_UNSET, AT_UNSET}, 1},
+        {5,  4,  "dec",  {AT_UNSET,     AT_UNSET,  AT_UNSET,    AT_UNSET, AT_UNSET}, {AT_DIRECT,    AT_REGISTER, AT_UNSET,    AT_UNSET, AT_UNSET}, 1},
+        {9,  1,  "jmp",  {AT_UNSET,     AT_UNSET,  AT_UNSET,    AT_UNSET, AT_UNSET}, {AT_DIRECT,    AT_RELATIVE, AT_UNSET,    AT_UNSET, AT_UNSET}, 1},
+        {9,  2,  "bne",  {AT_UNSET,     AT_UNSET,  AT_UNSET,    AT_UNSET, AT_UNSET}, {AT_DIRECT,    AT_RELATIVE, AT_UNSET,    AT_UNSET, AT_UNSET}, 1},
+        {9,  3,  "jsr",  {AT_UNSET,     AT_UNSET,  AT_UNSET,    AT_UNSET, AT_UNSET}, {AT_DIRECT,    AT_RELATIVE, AT_UNSET,    AT_UNSET, AT_UNSET}, 1},
+        {12, -1, "red",  {AT_UNSET,     AT_UNSET,  AT_UNSET,    AT_UNSET, AT_UNSET}, {AT_DIRECT,    AT_REGISTER, AT_UNSET,    AT_UNSET, AT_UNSET}, 1},
+        {13, -1, "prn",  {AT_UNSET,     AT_UNSET,  AT_UNSET,    AT_UNSET, AT_UNSET}, {AT_IMMEDIATE, AT_DIRECT,   AT_REGISTER, AT_UNSET, AT_UNSET}, 1},
+        {14, -1, "rts",  {AT_UNSET,     AT_UNSET,  AT_UNSET,    AT_UNSET, AT_UNSET}, {AT_UNSET,     AT_UNSET,    AT_UNSET,    AT_UNSET, AT_UNSET}, 0},
+        {15, -1, "stop", {AT_UNSET,     AT_UNSET,  AT_UNSET,    AT_UNSET, AT_UNSET}, {AT_UNSET,     AT_UNSET,    AT_UNSET,    AT_UNSET, AT_UNSET}, 0}
 };
 
 int findOperation(char *cmd, Operation *op) {
@@ -110,6 +109,6 @@ int findOperation(char *cmd, Operation *op) {
         }
     }
     strcat(errormsg, cmd);
-    logError(getState()->lineNumber, errormsg);
+    logError(getLineNumber(), errormsg);
     return -1;
 }

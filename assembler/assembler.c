@@ -43,7 +43,6 @@ int firstPass(char *fileName) {
     FILE *file;
     char line[MAX_LINE_LENGTH];
     DissectedLine dissectedLine;
-    LINE_NUMBER = 0;
     file = fopen(fileName, "r");
     if (file == NULL) {
         perror(fileName);
@@ -56,7 +55,7 @@ int firstPass(char *fileName) {
             fclose(file);
             return 0;
         }
-        LINE_NUMBER++;
+        incLineNumber();
         dissectLabel(line, &dissectedLine);
 
         switch (dissectedLine.lineType) {
@@ -81,8 +80,7 @@ int firstPass(char *fileName) {
 }
 
 void initializeFirstPass() {
-    getState()->lineNumber = 0;
-    /*TODO: Implement*/
+    initializeState();
 }
 
 /*------------------------
@@ -136,12 +134,12 @@ int splitCommandAndParams(char *line, char *token, char *remainder) {
     }
     /* Check if the last character in the command token is a comma */
     if (token[strlen(token) - 1] == ',') {
-        logError(LINE_NUMBER, "Illegal comma");
+        logError(getLineNumber(), "Illegal comma");
         return -1;
     }
     /* If n > MAX_TOKENS it means we got more text than the maximum text expected*/
     if (n > MAX_TOKENS) {
-        logError(LINE_NUMBER, "Extraneous text after end of command");
+        logError(getLineNumber(), "Extraneous text after end of command");
         return -1;
     }
     remainder[0] = 0;
@@ -149,7 +147,7 @@ int splitCommandAndParams(char *line, char *token, char *remainder) {
     for (i = 0; i < n - 1; i++) {
         int len = strlen(remainder);
         if ((len != 0) && (remainder[len - 1] != ',') && (parts[i][0] != ',')) {
-            logError(LINE_NUMBER, "Missing comma");
+            logError(getLineNumber(), "Missing comma");
             return -1;
         }
         strcat(remainder, parts[i]);
@@ -167,7 +165,7 @@ int tokenizeParams(char *remainder, CommandTokens *parsedCommand) {
     parsedCommand->numArgs = 0;
     while (*remainder != 0) {
         if (parsedCommand->numArgs > MAX_PARAMS - 1) { /* We have an extra parameter after the last valid token. */
-            logError(LINE_NUMBER, "Extraneous text after end of command");
+            logError(getLineNumber(), "Extraneous text after end of command");
             return -1;
         }
         if (*remainder == ',') {
@@ -176,11 +174,11 @@ int tokenizeParams(char *remainder, CommandTokens *parsedCommand) {
                 /* Beginning of token - Must be an error */
                 if (parsedCommand->numArgs == 0) {
                     /* First token starts with a comma. */
-                    logError(LINE_NUMBER, "Illegal comma");
+                    logError(getLineNumber(), "Illegal comma");
                     return -1;
                 }
                 /* Some other (not first) token starts with a comma. We have two consecutive commas. */
-                logError(LINE_NUMBER, "Multiple consecutive commas");
+                logError(getLineNumber(), "Multiple consecutive commas");
                 return -1;
             }
             /* Closing the token */
@@ -198,7 +196,7 @@ int tokenizeParams(char *remainder, CommandTokens *parsedCommand) {
     }
     /* We have an extra parameter after the last valid token. */
     if (parsedCommand->numArgs > MAX_PARAMS - 1) {
-        logError(LINE_NUMBER, "Extraneous text after end of command");
+        logError(getLineNumber(), "Extraneous text after end of command");
         return -1;
     }
     if (charIndex > 0) {
@@ -209,13 +207,12 @@ int tokenizeParams(char *remainder, CommandTokens *parsedCommand) {
 }
 
 
-int verifyArguments(const Operation *op, const CommandTokens *commandTokens) {
-    int addressingType;
+int verifyArguments(Operation *op, CommandTokens *commandTokens) {
     if (commandTokens->numArgs != op->numArgs) {
         char buf[200];
         sprintf(buf, "Wrong number of arguments for %s. Expected: %d Got: %d", op->name,
                 op->numArgs, commandTokens->numArgs);
-        logError(getState()->lineNumber, buf);
+        logError(getLineNumber(), buf);
         return -1;
     }
     if (op->numArgs > 0) {
@@ -239,7 +236,7 @@ int matchesAddressing(int validAddressingArr[5], char *arg) {
             return 0;
         }
     }
-    logError(getState()->lineNumber, "Wrong argument type");
+    logError(getLineNumber(), "Wrong argument type");
     return -1;
 }
 

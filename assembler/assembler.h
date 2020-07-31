@@ -20,7 +20,7 @@ int handleDirectiveLabelFirstPass(DissectedLine line);
 
 int handleCommand(DissectedLine dissectedLine);
 
-int verifyArguments(const Operation *op, const CommandTokens *commandTokens);
+int verifyArguments(Operation *op, CommandTokens *commandTokens);
 
 int matchesAddressing(int validAddressingArr[5], char *arg);
 

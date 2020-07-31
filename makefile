@@ -8,11 +8,11 @@ out/errorlog.o: logging/errorlog.c logging/errorlog.h
 
 out/assembler.o: assembler/assembler.c assembler/assembler.h out/errorlog.o
 	mkdir -p out
-	gcc -c assembler/assembler.c -o out/assembler.o -Ilogging -Wall -ansi -pedantic
+	gcc -c assembler/assembler.c -o out/assembler.o -Ilogging -Iassembler -Wall -ansi -pedantic
 
 out/dissector.o: assembler/dissector.c
 	mkdir -p out
-	gcc -c assembler/dissector.c -o out/dissector.o -Ilogging -Wall -ansi -pedantic
+	gcc -c assembler/dissector.c -o out/dissector.o -Ilogging -Iassembler -Wall -ansi -pedantic
 
 out/state.o: assembler/state.c assembler/structs.h assembler/state.h
 	mkdir -p out
