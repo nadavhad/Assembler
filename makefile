@@ -1,6 +1,6 @@
-assembler.out: out/errorlog.o out/assembler.o out/state.o out/dissector.o
+assembler.out: out/errorlog.o out/assembler.o out/state.o out/dissector.o out/symbolTable.o out/unit.o
 	mkdir -p out
-	gcc -g  -Wall -ansi -pedantic out/errorlog.o out/assembler.o out/state.o out/dissector.o -o out/assembler.out
+	gcc -g  -Wall -ansi -pedantic out/errorlog.o out/assembler.o out/state.o out/dissector.o out/symbolTable.o out/unit.o -o out/assembler.out
 
 out/errorlog.o: logging/errorlog.c logging/errorlog.h
 	mkdir -p out
@@ -18,6 +18,14 @@ out/state.o: assembler/state.c assembler/structs.h assembler/state.h
 	mkdir -p out
 	gcc -c assembler/state.c -o out/state.o -Ilogging -Wall -ansi -pedantic
 
+out/symbolTable.o: assembler/symbolTable.c logging/errorlog.h assembler/symbolTable.h
+	mkdir -p out
+	gcc -c assembler/symbolTable.c -o out/symbolTable.o -Ilogging -Iassembler -Wall -ansi -pedantic
+
+	#TODO delete this part from the makefile
+out/unit.out: unit.c assembler/symbolTable.h out/symbolTable.o out/state.o
+	mkdir -p out
+	gcc -g unit.c out/symbolTable.o out/errorlog.o out/state.o -o out/unit.out -Ilogging -Iassembler -Wall -ansi -pedantic
 
 clean:
 	rm -rf out/*

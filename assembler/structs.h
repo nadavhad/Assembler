@@ -1,17 +1,18 @@
-#include "constants.h"
-
 #ifndef ASSEMBLER_STRUCTS_H
 #define ASSEMBLER_STRUCTS_H
 
-enum LineType {
+#include "constants.h"
+
+typedef enum {
     LT_COMMENT,
     LT_COMMAND,
     LT_DIRECTIVE
-};
+} LineType;
+
 typedef struct {
     char label[MAX_LINE_LENGTH];
     char command[MAX_LINE_LENGTH];
-    enum LineType lineType; /* TODO(yotam): Return line type -- done*/
+    LineType lineType; /* TODO(yotam): Return line type -- done*/
 } DissectedLine;
 
 typedef struct {
@@ -56,5 +57,8 @@ typedef struct {
     int DC;
     ByteCode* currentByteCode;
 } State;
+
+
+
 
 #endif /*ASSEMBLER_STRUCTS_H*/
