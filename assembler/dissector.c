@@ -16,36 +16,24 @@
 #define WHT(c) EQ(c, ' ') || EQ(c, '\t')
 
 
+
 int findArgumentAddressingType(const char *arg) {
     int i;
     switch (arg[0]) {
         case 'r':
             if (('0' <= arg[1] && arg[1] <= '7') && (*(arg + 2) == '\0')) {
                 return AT_REGISTER;
-            } else {
-                char *errormsg = "Attempted access to undefined register: ";
-                strcat(errormsg, arg);
-                logError(-1, errormsg);
-                return -1;
-            }
+            } else ERROR_ARG("Attempted access to undefined register: ", arg)
         case '#':
             i = 1;
             while (isdigit(*(arg + i))) {
                 i++;
             }
-            if (*(arg + i) != '\0') {
-                char *errormsg = "Argument addressed with # must be a number, not: ";
-                strcat(errormsg, arg);
-                logError(-1, errormsg);
-                return -1;
-            } else return AT_IMMEDIATE;
+            if (*(arg + i) == '\0') return AT_IMMEDIATE;
+            else ERROR_ARG("Argument addressed with # must be a number, not: ", arg)
         case '&':
-            if (!requiresLabel(arg)) {
-                char *errormsg = "Argument addressed with & must be a label, cannot find label: ";
-                strcat(errormsg, arg);
-                logError(-1, errormsg);
-                return -1;
-            } else return AT_RELATIVE;
+            if (requiresLabel(arg) != 0) return AT_RELATIVE;
+            else ERROR_ARG("Argument addressed with & must be a label, cannot find label: ", arg)
         default:
             return AT_DIRECT;
     }
@@ -125,21 +113,3 @@ int findOperation(char *cmd, Operation *op) {
     logError(getState()->lineNumber, errormsg);
     return -1;
 }
-
-Operation xxx[] = {
-        /*
-        op  funct name    src addressing       dst addressing
-         */
-        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
-        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
-        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
-        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
-        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
-        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
-        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
-        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
-        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
-        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
-        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
-        {0,  -1,  "mov",  {1, 2, -1, -1, -1},  {1, 2, -1, -1, -1}},
-};
