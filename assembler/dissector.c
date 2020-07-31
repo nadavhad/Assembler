@@ -38,6 +38,8 @@ int findArgumentAddressingType(const char *arg) {
     }
 }
 
+static int validateLabel(char *label);
+
 int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
     char *accumulator;
     char *iterator = rawLine;
@@ -61,6 +63,9 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
         if (*iterator == ':') {
             /* if has a label, fill label field with accumulator and reset accumulator */
             strcpy(dissectedLine->label, accumulator);
+            if (validateLabel(dissectedLine->label) == -1) {
+                return -1;
+            }
             accumulator = malloc(sizeof(char[MAX_LINE_LENGTH]));
             index = 0;
         }
@@ -99,6 +104,49 @@ static Operation ops[NUM_OPERATIONS] = {
         {14, 0, "rts",  {AT_UNSET,     AT_UNSET,  AT_UNSET,    AT_UNSET, AT_UNSET}, {AT_UNSET,     AT_UNSET,    AT_UNSET,    AT_UNSET, AT_UNSET}, 0},
         {15, 0, "stop", {AT_UNSET,     AT_UNSET,  AT_UNSET,    AT_UNSET, AT_UNSET}, {AT_UNSET,     AT_UNSET,    AT_UNSET,    AT_UNSET, AT_UNSET}, 0}
 };
+
+static char directives[4][7] = {
+        "entry",
+        "data",
+        "extern",
+        "string",
+};
+
+int validateLabel(char *label) {
+    int i;
+    /*
+     * Demands:
+     * 1. label[0] is alphabetic
+     * 2. len(label) <= 31
+     * 3. unique
+     * 4. not reserved:
+     *  a. not r0..r7
+     *  b. not command
+     *  c. not directive
+     */
+    if (!(isalpha(label[0]))) ERROR_ARG("Illegal label, labels must start with a letter. Label: ", label)
+
+    if (strlen(label) > MAX_LABEL_LENGTH) ERROR_ARG("Illegal label, max label length is 31 characters. Label: ", label)
+
+    if (/* label is duplicate*/0) ERROR_ARG(
+            "Illegal label, duplicate labels aren't allowed and this label already exists: ", label)
+
+    if ((strlen(label) == 3)
+        && (label[0] == 'r')
+        && ((label[1] >= '0') && (label[1] <= '7'))) ERROR_ARG(
+            "Illegal label, label cannot be a register name. Label: ", label)
+
+    for (i = 0; i < NUM_OPERATIONS; i++) {
+        if (strcmp(label, ops[i].name) == 0) ERROR_ARG("Illegal label, label cannot be a command name. Label: ", label)
+    }
+
+    for (i = 0; i < 5; i++) {
+        if (strcmp(label, directives[i]) == 0) ERROR_ARG("Illegal label, label cannot be a directive name. Label: ",
+                                                         label)
+    }
+    return 0;
+}
+
 
 int findOperation(char *cmd, Operation *op) {
     int i;

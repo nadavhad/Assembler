@@ -8,7 +8,7 @@
 
 /**
  * TODO:
- * Y  0. Check if a label is valid (reserved words)
+ * Y d 0. Check if a label is valid (reserved words)
  * N  1. Create symbol table (linked list. Data {Name, Value, Type, IsEntry})
  *      AddSymbol(name, value, type, entry) => error if label exists
  *      LookupSymbol(name)
