@@ -6,6 +6,28 @@
 #include "state.h"
 #include "../logging/errorlog.h"
 
+/**
+ * TODO:
+ * Y  0. Check if a label is valid (reserved words)
+ * N  1. Create symbol table (linked list. Data {Name, Value, Type, IsEntry})
+ *      AddSymbol(name, value, type, entry) => error if label exists
+ *      LookupSymbol(name)
+ *      UpdateSymbol(name, value)
+ *
+ * N  2. handleCmdLabelFirstPass
+ * N  3. handleDirectiveLabelFirstPass
+ * Y  4. Build opcode skeleton
+ *     0. Return data for each argument (addressing, register value, value)
+ *     a. Opcode, funct, ARE, Addressing, registers,
+ *     b. Arguments
+ * N  5. Update symbol table
+ * N  6. Update code skeleton
+ * N  7. Update state (IC)
+ *
+ *
+ * X. Handle directives
+ */
+
 int main(int argc, char **argv) {
     int i = 0;
     for (i = 1; i < argc; ++i) {
@@ -56,7 +78,9 @@ int firstPass(char *fileName) {
             return 0;
         }
         incLineNumber();
-        dissectLabel(line, &dissectedLine);
+        if (dissectLabel(line, &dissectedLine) == -1) {
+            continue;
+        }
 
         switch (dissectedLine.lineType) {
             case LT_COMMENT:
@@ -237,6 +261,9 @@ int verifyArguments(Operation *op, CommandTokens *commandTokens) {
 int matchesAddressing(int validAddressingArr[5], char *arg) {
     int i;
     int addressingType = findArgumentAddressingType(arg);
+    if (addressingType == -1) {
+        return -1;
+    }
     for (i = 0; validAddressingArr[i] != -1; i++) {
         if (validAddressingArr[i] == addressingType) {
             return 0;

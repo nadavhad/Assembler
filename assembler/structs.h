@@ -22,7 +22,11 @@ typedef struct {
 } CommandTokens;
 
 enum AddressingType {
-    AT_IMMEDIATE = 0, AT_DIRECT = 1, AT_RELATIVE = 2, AT_REGISTER = 3, AT_UNSET=-1
+    AT_IMMEDIATE = 0,
+    AT_DIRECT = 1,
+    AT_RELATIVE = 2,
+    AT_REGISTER = 3,
+    AT_UNSET=-1
 };
 
 typedef struct {
