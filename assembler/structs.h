@@ -26,7 +26,7 @@ enum AddressingType {
     AT_DIRECT = 1,
     AT_RELATIVE = 2,
     AT_REGISTER = 3,
-    AT_UNSET=-1
+    AT_UNSET = -1
 };
 
 typedef struct {
@@ -39,9 +39,22 @@ typedef struct {
 } Operation;
 
 typedef struct {
+    unsigned int E : 1;
+    unsigned int R : 1;
+    unsigned int A : 1;
+    unsigned int funct : 5;
+    unsigned int destRegister : 3;
+    unsigned int destAddressing : 2;
+    unsigned int srcRegister : 3;
+    unsigned int srcAddressing : 2;
+    unsigned int opcode : 6;
+} ByteCode;
+
+typedef struct {
     int lineNumber;
     int IC;
     int DC;
+    ByteCode* currentByteCode;
 } State;
 
 #endif /*ASSEMBLER_STRUCTS_H*/

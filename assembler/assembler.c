@@ -16,7 +16,7 @@
  *
  * N  2. handleCmdLabelFirstPass
  * N  3. handleDirectiveLabelFirstPass
- * Y  4. Build opcode skeleton
+ * Y i 4. Build opcode skeleton
  *     0. Return data for each argument (addressing, register value, value)
  *     a. Opcode, funct, ARE, Addressing, registers,
  *     b. Arguments
