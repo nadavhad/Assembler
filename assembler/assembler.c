@@ -215,11 +215,17 @@ int verifyArguments(Operation *op, CommandTokens *commandTokens) {
         logError(getLineNumber(), buf);
         return -1;
     }
+
     if (op->numArgs > 0) {
-        if (!matchesAddressing(op->srcAddressing, commandTokens->arg1)) {
+        int *addressing = op->srcAddressing;
+        if (op->srcAddressing[0] == AT_UNSET) {
+            addressing = op->destAddressing;
+        }
+        if (!matchesAddressing(addressing, commandTokens->arg1)) {
             return -1;
         }
     }
+
     if (op->numArgs > 1) {
         if (!matchesAddressing(op->destAddressing, commandTokens->arg2)) {
             return -1;
