@@ -1,5 +1,8 @@
 #ifndef ASSEMBLER_ERRORLOG_H
 #define ASSEMBLER_ERRORLOG_H
+
+#include "errorlog.h"
+
 /**
  * Log an error
  * @param lineNumber
@@ -22,7 +25,7 @@ int numErrors();
 #define ERROR_ARG(msg, arg) {\
                 char errormsg[100] = msg;\
                 strcat(errormsg, arg);\
-                logError(-1, errormsg);\
+                logError(LINE_NUMBER, errormsg);\
                 return -1;\
             }
 #endif /*ASSEMBLER_ERRORLOG_H*/

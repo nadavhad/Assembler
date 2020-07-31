@@ -1,5 +1,7 @@
 jmp 1, r1
 
+jmp #1
+
 rxc 111
 wrt
 xc , d

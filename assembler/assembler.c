@@ -102,6 +102,9 @@ int handleCommand(DissectedLine dissectedLine) {
     if (findOperation(commandTokens.command, command) != 0) {
         return -1;
     }
+    if (verifyArguments(command, &commandTokens) != 0) {
+        return -1;
+    }
 
 
     /*
@@ -204,6 +207,42 @@ int tokenizeParams(char *remainder, CommandTokens *parsedCommand) {
     currArg[charIndex] = 0;
     return 0;
 }
+
+
+int verifyArguments(const Operation *op, const CommandTokens *commandTokens) {
+    int addressingType;
+    if (commandTokens->numArgs != op->numArgs) {
+        char buf[200];
+        sprintf(buf, "Wrong number of arguments for %s. Expected: %d Got: %d", op->name,
+                op->numArgs, commandTokens->numArgs);
+        logError(getState()->lineNumber, buf);
+        return -1;
+    }
+    if (op->numArgs > 0) {
+        if (!matchesAddressing(op->srcAddressing, commandTokens->arg1)) {
+            return -1;
+        }
+    }
+    if (op->numArgs > 1) {
+        if (!matchesAddressing(op->destAddressing, commandTokens->arg2)) {
+            return -1;
+        }
+    }
+    return 0;
+}
+
+int matchesAddressing(int validAddressingArr[5], char *arg) {
+    int i;
+    int addressingType = findArgumentAddressingType(arg);
+    for (i = 0; validAddressingArr[i] != -1; i++) {
+        if (validAddressingArr[i] == addressingType) {
+            return 0;
+        }
+    }
+    logError(getState()->lineNumber, "Wrong argument type");
+    return -1;
+}
+
 
 int dissectCommand(char *commandStr, CommandTokens *parsedCommand) {
     /* 1. Check command structure (tokens, command, number of arguments)
