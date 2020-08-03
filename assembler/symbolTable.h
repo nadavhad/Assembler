@@ -8,10 +8,12 @@ enum bool {TRUE, FALSE};
 typedef struct {
     char name[MAX_LABEL_LENGTH];
     int value;
-    LineType type;
+    SymbolType type;
     enum bool isEntry;
 } SymbolData;
-int addSymbol(char name[MAX_LABEL_LENGTH], int value, LineType type, enum bool isEntry);
+
+
+int addSymbol(char name[MAX_LABEL_LENGTH], int value, SymbolType type, enum bool isEntry);
 
 int lookUp(char name[MAX_LABEL_LENGTH], SymbolData *symbolData);
 

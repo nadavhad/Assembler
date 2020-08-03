@@ -5,24 +5,25 @@
 #include "assembler.h"
 #include "state.h"
 #include "../logging/errorlog.h"
+#include "symbolTable.h"
 
 /**
  * TODO:
  * Y d 0. Check if a label is valid (reserved words)
- * N  1. Create symbol table (linked list. Data {Name, Value, Type, IsEntry})
+ * N d 1. Create symbol table (linked list. Data {Name, Value, Type, IsEntry})
  *      AddSymbol(name, value, type, entry) => error if label exists
  *      LookupSymbol(name)
  *      UpdateSymbol(name, value)
  *
- * N  2. handleCmdLabelFirstPass
- * N  3. handleDirectiveLabelFirstPass
+ * N d 2. handleCmdLabelFirstPass
+ * N d 3. handleDirectiveLabelFirstPass
  * Y i 4. Build opcode skeleton
  *     0. Return data for each argument (addressing, register value, value)
  *     a. Opcode, funct, ARE, Addressing, registers,
  *     b. Arguments
- * N  5. Update symbol table
- * N  6. Update code skeleton
- * N  7. Update state (IC)
+ * N d 5. Update symbol table
+ * N d 6. Update code skeleton
+ * N d 7. Update state (IC)
  *
  *
  * X. Handle directives
@@ -111,13 +112,17 @@ void initializeFirstPass() {
  *  Commands
  */
 int handleCmdLabelFirstPass(DissectedLine dissectedLine) {
+    if(addSymbol(dissectedLine.label,getState()->IC,ST_CODE,FALSE) != 0){
+        return -1;
+    }
     return 0;
-    /*TODO: Implement*/
 }
 
 int handleCommand(DissectedLine dissectedLine) {
     CommandTokens commandTokens;
     Operation *command = malloc(sizeof(Operation));
+    int l = 0;
+    char* encoding;
     if (dissectCommand(dissectedLine.command, &commandTokens) != 0) {
         return -1;
     }
@@ -128,6 +133,9 @@ int handleCommand(DissectedLine dissectedLine) {
         return -1;
     }
 
+
+    memcpy(&(getState()->currentByteCode[getState()->IC]), encoding, l);
+    getState()->IC += l;
 
     /*
      * TODO:
@@ -300,9 +308,12 @@ int handleDirective(DissectedLine dissectedLine) {
 
 }
 
-int handleDirectiveLabelFirstPass(DissectedLine line) {
+int handleDirectiveLabelFirstPass(DissectedLine dissectedLine) {
+    /*TODO: handle .entry*/
+    if(addSymbol(dissectedLine.label,getState()->DC,ST_DATA,FALSE) != 0){
+        return -1;
+    }
     return 0;
-    /*TODO: Implement*/
 }
 
 /*************************

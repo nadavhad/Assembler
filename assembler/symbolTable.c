@@ -27,7 +27,7 @@ struct Node *createNode(char name[MAX_LABEL_LENGTH], int value, LineType type, e
     return node;
 }
 
-int addSymbol(char name[MAX_LABEL_LENGTH], int value, LineType type, enum bool isEntry) {
+int addSymbol(char name[MAX_LABEL_LENGTH], int value, SymbolType type, enum bool isEntry) {
     struct Node *lastNode;
     if (_head == NULL) {
         _head = createNode(name, value, type, isEntry);

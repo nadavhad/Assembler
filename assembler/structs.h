@@ -9,6 +9,12 @@ typedef enum {
     LT_DIRECTIVE
 } LineType;
 
+typedef enum {
+    ST_CODE,
+    ST_DATA,
+    ST_EXTERNAL
+} SymbolType;
+
 typedef struct {
     char label[MAX_LINE_LENGTH];
     char command[MAX_LINE_LENGTH];
@@ -55,7 +61,7 @@ typedef struct {
     int lineNumber;
     int IC;
     int DC;
-    ByteCode* currentByteCode;
+    ByteCode currentByteCode[8192];
 } State;
 
 
