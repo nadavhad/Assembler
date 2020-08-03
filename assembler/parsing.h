@@ -35,7 +35,7 @@ int findOperation(char *, Operation *);
  * Finds the addressing type of the argument, and checks its validity.
  * @return addressing type (0..3), or -1 on error/mismatch
  */
-int findArgumentAddressingType(const char *);
+int findArgumentAddressingType(const char *, Argument*);
 
 
 #endif /*ASSEMBLER_PARSING_H*/

@@ -9,19 +9,6 @@ typedef enum {
     LT_DIRECTIVE
 } LineType;
 
-typedef struct {
-    char label[MAX_LINE_LENGTH];
-    char command[MAX_LINE_LENGTH];
-    LineType lineType; /* TODO(yotam): Return line type -- done*/
-} DissectedLine;
-
-typedef struct {
-    char command[MAX_CMD_LENGTH];
-    char arg1[MAX_LINE_LENGTH];
-    char arg2[MAX_LINE_LENGTH];
-    int numArgs;
-} CommandTokens;
-
 enum AddressingType {
     AT_IMMEDIATE = 0,
     AT_DIRECT = 1,
@@ -29,6 +16,36 @@ enum AddressingType {
     AT_REGISTER = 3,
     AT_UNSET = -1
 };
+
+typedef struct {
+    char label[MAX_LINE_LENGTH];
+    char command[MAX_LINE_LENGTH];
+    LineType lineType;
+} DissectedLine;
+
+enum ArgumentPosition {
+    AP_SRC = 1, AP_DEST = 2
+};
+typedef union {
+    int scalar;
+    char *symbol;
+} Data;
+
+typedef struct {
+    enum AddressingType addressing;
+    int position;
+    unsigned int reg;
+    Data value;
+} Argument;
+
+typedef struct {
+    char command[MAX_CMD_LENGTH];
+    char arg1[MAX_LINE_LENGTH];
+    Argument arg1Data;
+    char arg2[MAX_LINE_LENGTH];
+    Argument arg2Data;
+    int numArgs;
+} CommandTokens;
 
 typedef struct {
     int opcode;
@@ -51,14 +68,21 @@ typedef struct {
     unsigned int opcode : 6;
 } ByteCode;
 
+
+typedef struct {
+    unsigned int E : 1;
+    unsigned int R : 1;
+    unsigned int A : 1;
+    Data data;
+} DataByte;
+
 typedef struct {
     int lineNumber;
     int IC;
     int DC;
-    ByteCode* currentByteCode;
+    ByteCode *currentByteCode;
+    DataByte *dataBytes[2];
 } State;
-
-
 
 
 #endif /*ASSEMBLER_STRUCTS_H*/

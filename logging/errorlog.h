@@ -1,7 +1,6 @@
 #ifndef ASSEMBLER_ERRORLOG_H
 #define ASSEMBLER_ERRORLOG_H
 
-#include "errorlog.h"
 #include "state.h"
 
 /**
@@ -24,8 +23,8 @@ int numErrors();
  * A macro representing an error clause/block based on an illegal argument
  */
 #define ERROR_ARG(msg, arg) {\
-                char errormsg[100] = msg;\
-                strcat(errormsg, arg);\
+                char errormsg[100];\
+                sprintf(errormsg, "%s %s", msg, arg);\
                 logError(getLineNumber(), errormsg);\
                 return -1;\
             }

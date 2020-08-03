@@ -1,10 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include "parsing.h"
-#include "../logging/errorlog.h"
-#include "state.h"
 #include <ctype.h>
+#include "parsing.h"
+#include "state.h"
+#include "../logging/errorlog.h"
 
 #define NUM_OPERATIONS 16
 #define EQ(c, n) ((c) == (n))
@@ -15,30 +15,50 @@
 #define END(c) (EOS(c) || eqEOF(c) || EOL(c))
 #define WHT(c) (EQ(c, ' ') || EQ(c, '\t'))
 
+int validateLabel(char *label);
 
-int findArgumentAddressingType(const char *arg) {
-    int i;
-    switch (arg[0]) {
-        case 'r':
-            if (('0' <= arg[1] && arg[1] <= '7') && (*(arg + 2) == '\0')) {
-                return AT_REGISTER;
-            } else ERROR_ARG("Attempted access to undefined register: ", arg)
-        case '#':
-            i = 1;
-            while (isdigit(*(arg + i))) {
-                i++;
-            }
-            if (*(arg + i) == '\0') return AT_IMMEDIATE;
-            else ERROR_ARG("Argument addressed with # must be a number, not: ", arg)
-        case '&':
-            if (requiresLabel(arg) != 0) return AT_RELATIVE;
-            else ERROR_ARG("Argument addressed with & must be a label, cannot find label: ", arg)
-        default:
-            return AT_DIRECT;
-    }
+unsigned int getJumpDistance(const char *string) {
+    return 0;
 }
 
-static int validateLabel(char *label);
+unsigned int getAddress(const char *arg) {
+    return 0;
+}
+
+int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
+    int i;
+    if ((raw_arg[0] == 'r') && (strlen(raw_arg) == 2) && (raw_arg[1] >= '0') && (raw_arg[1] <= '7')) {
+        argument->addressing = AT_REGISTER;
+        argument->reg = raw_arg[1] - '0';
+        return 0;
+    } else if (raw_arg[0] == '#') {
+        i = 1;
+        while (isdigit(*(raw_arg + i))) {
+            i++;
+        }
+        if (*(raw_arg + i) == '\0') {
+            argument->addressing = AT_IMMEDIATE;
+            argument->value.scalar = strtol((raw_arg + 1), NULL, 10);
+            return 0;
+        } else ERROR_ARG("Argument addressed with # must be a number, not: ", raw_arg)
+    } else if (raw_arg[0] == '&') {
+        argument->addressing = AT_RELATIVE;
+        strcpy(argument->value.symbol, &raw_arg[1]);
+        if (validateLabel(argument->value.symbol) == -1) {
+            ERROR_ARG("Invalid label: ", argument->value.symbol)
+        }
+        return 0;
+    }
+
+    if (requiresLabel(raw_arg) != 0) {
+        argument->addressing = AT_DIRECT;
+        strcpy(argument->value.symbol, raw_arg);
+        if (validateLabel(argument->value.symbol) == -1) {
+            ERROR_ARG("Invalid label: ", argument->value.symbol)
+        }
+    }
+    return 0;
+}
 
 int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
     char *accumulator;

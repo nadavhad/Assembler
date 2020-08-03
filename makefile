@@ -16,7 +16,7 @@ out/dissector.o: assembler/dissector.c
 
 out/state.o: assembler/state.c assembler/structs.h assembler/state.h
 	mkdir -p out
-	gcc -c assembler/state.c -o out/state.o -Ilogging -Wall -ansi -pedantic
+	gcc -c assembler/state.c -o out/state.o -Ilogging -Iassembler -Wall -ansi -pedantic
 
 out/symbolTable.o: assembler/symbolTable.c logging/errorlog.h assembler/symbolTable.h
 	mkdir -p out

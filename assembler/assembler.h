@@ -22,7 +22,7 @@ int handleCommand(DissectedLine dissectedLine);
 
 int verifyArguments(Operation *op, CommandTokens *commandTokens);
 
-int matchesAddressing(int validAddressingArr[5], char *arg);
+int matchesAddressing(int validAddressingArr[5], char *arg, Argument *argData);
 
 
 

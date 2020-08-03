@@ -6,6 +6,8 @@
 #include "state.h"
 #include "../logging/errorlog.h"
 
+int encodeCommandPass1(Operation *command, CommandTokens args);
+
 /**
  * TODO:
  * Y d 0. Check if a label is valid (reserved words)
@@ -128,7 +130,9 @@ int handleCommand(DissectedLine dissectedLine) {
         return -1;
     }
 
-
+    if (encodeCommandPass1(command, commandTokens) != 0) {
+        return -1;
+    }
     /*
      * TODO:
      * 1. Look for the command in table
@@ -139,6 +143,11 @@ int handleCommand(DissectedLine dissectedLine) {
      * 6. Save IC, L with binary code
      * 7. Increment IC accordingly
      */
+    return 0;
+}
+
+int encodeCommandPass1(Operation *command, CommandTokens args) {
+    /* TODO*/
     return 0;
 }
 
@@ -245,27 +254,26 @@ int verifyArguments(Operation *op, CommandTokens *commandTokens) {
         if (op->srcAddressing[0] == AT_UNSET) {
             addressing = op->destAddressing;
         }
-        if (!matchesAddressing(addressing, commandTokens->arg1)) {
+        if (!matchesAddressing(addressing, commandTokens->arg1, &commandTokens->arg1Data)) {
             return -1;
         }
     }
 
     if (op->numArgs > 1) {
-        if (!matchesAddressing(op->destAddressing, commandTokens->arg2)) {
+        if (!matchesAddressing(op->destAddressing, commandTokens->arg2, &commandTokens->arg2Data)) {
             return -1;
         }
     }
     return 0;
 }
 
-int matchesAddressing(int validAddressingArr[5], char *arg) {
+int matchesAddressing(int validAddressingArr[5], char *arg, Argument *argData) {
     int i;
-    int addressingType = findArgumentAddressingType(arg);
-    if (addressingType == -1) {
+    if (findArgumentAddressingType(arg, argData)) {
         return -1;
     }
     for (i = 0; validAddressingArr[i] != -1; i++) {
-        if (validAddressingArr[i] == addressingType) {
+        if (validAddressingArr[i] == argData->addressing) {
             return 0;
         }
     }
@@ -327,5 +335,6 @@ int secondPass(char *fileName) {
 }
 
 int requiresLabel(const char *label) {
+    /*TODO*/
     return 0;
 }
