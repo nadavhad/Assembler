@@ -17,7 +17,7 @@ jobs:
       run: make
     - name: test
       run: |
-      make check &> test_out.txt
-      git --no-pager diff --exit-code HEAD
+        make check &> test_out.txt
+        git --no-pager diff --exit-code HEAD
 #    - name: make distcheck
 #      run: make distcheck
