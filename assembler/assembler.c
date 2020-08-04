@@ -114,7 +114,7 @@ void initializeFirstPass() {
  *  Commands
  */
 int handleCmdLabelFirstPass(DissectedLine dissectedLine) {
-    if(addSymbol(dissectedLine.label,getState()->IC,ST_CODE,FALSE) != 0){
+    if (addSymbol(dissectedLine.label, getState()->IC, ST_CODE, FALSE) != 0) {
         return -1;
     }
     return 0;
@@ -154,8 +154,88 @@ int handleCommand(DissectedLine dissectedLine) {
      */
     return 0;
 }
+/**
+ * Returns 2 if an argument doesn't need a data byte, 0 on success, and -1 on failiure.
+ */
+int buildDataByte(DataByte *databyte, Argument arg) {
+    databyte->data = arg.value;
+    switch(arg.addressing) {
+        case AT_IMMEDIATE:
+            databyte->A = 1;
+            databyte->E = 0;
+            databyte->R = 0;
+            break;
+        case AT_DIRECT:
+            databyte->A = 0;
+            /* internal: R; external: E */
+            /* TODO: add external check */
+            databyte->E = 0;
+            databyte->R = 0;
+            break;
+        case AT_RELATIVE:
+            databyte->A = 1;
+            databyte->E = 0;
+            databyte->R = 0;
+            break;
+        case AT_REGISTER:
+            return 2;
+        default:
+            logError(getLineNumber(), "Something terrible has happened!!!");
+            return -1;
+
+    }
+    return 0;
+}
 
 int encodeCommandPass1(Operation *command, CommandTokens args) {
+    DataByte data1, data2;
+    int code;
+    /* start building bytecode*/
+    getState()->currentByteCode->opcode = command->opcode;
+    getState()->currentByteCode->funct = command->funct;
+    if (args.numArgs < 1) { /* if we don't have args, empty all relevant fields */
+        getState()->currentByteCode->destAddressing = 0;
+        getState()->currentByteCode->destRegister = 0;
+        getState()->currentByteCode->srcAddressing = 0;
+        getState()->currentByteCode->srcRegister = 0;
+    }
+    if(args.numArgs == 1) {/* if we have only one arg, it's dest */
+        getState()->currentByteCode->destRegister = args.arg1Data.reg;
+        getState()->currentByteCode->destAddressing = args.arg1Data.addressing;
+
+        code = buildDataByte(&data1, args.arg1Data);
+        if(code == -1) {
+            return -1;
+        } else if(code != 2) {
+            getState()->dataBytes[0] = &data1;
+        }
+    }
+    if(args.numArgs == 2) {/* if we have two args, then */
+        int idx = 0;
+        getState()->currentByteCode->srcRegister = args.arg1Data.reg;
+        getState()->currentByteCode->srcAddressing = args.arg1Data.addressing;
+
+        code = buildDataByte(&data1, args.arg1Data);
+        if(code == -1) {
+            return -1;
+        } else if(code != 2) {
+            getState()->dataBytes[idx] = &data1;
+            idx++;
+        }
+
+        getState()->currentByteCode->destRegister = args.arg2Data.reg;
+        getState()->currentByteCode->destAddressing = args.arg2Data.addressing;
+
+        code = buildDataByte(&data2, args.arg2Data);
+        if(code == -1) {
+            return -1;
+        } else if(code != 2) {
+            getState()->dataBytes[idx] = &data2;
+        }
+    }
+
+
+
     /* TODO*/
     return 0;
 }
@@ -319,7 +399,7 @@ int handleDirective(DissectedLine dissectedLine) {
 
 int handleDirectiveLabelFirstPass(DissectedLine dissectedLine) {
     /*TODO: handle .entry*/
-    if(addSymbol(dissectedLine.label,getState()->DC,ST_DATA,FALSE) != 0){
+    if (addSymbol(dissectedLine.label, getState()->DC, ST_DATA, FALSE) != 0) {
         return -1;
     }
     return 0;
