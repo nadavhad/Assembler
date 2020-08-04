@@ -29,6 +29,9 @@ struct Node *createNode(char name[MAX_LABEL_LENGTH], int value, LineType type, e
 
 int addSymbol(char name[MAX_LABEL_LENGTH], int value, SymbolType type, enum bool isEntry) {
     struct Node *lastNode;
+    if(strlen(name) == 0) { /* if label is empty, don't add it to the table */
+        return 0;
+    }
     if (_head == NULL) {
         _head = createNode(name, value, type, isEntry);
         return 0;

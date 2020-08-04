@@ -7,7 +7,7 @@
 #include "../logging/errorlog.h"
 #include "symbolTable.h"
 
-int encodeCommandPass1(Operation *command, CommandTokens args);
+int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcode[9], int *opcodeLen);
 
 /**
  * TODO:
@@ -73,6 +73,7 @@ int firstPass(char *fileName) {
         perror(fileName);
         return -1;
     }
+
     initializeFirstPass();
     while (1) {
         if (fgets(line, MAX_LINE_LENGTH, file) == NULL) {
@@ -123,8 +124,8 @@ int handleCmdLabelFirstPass(DissectedLine dissectedLine) {
 int handleCommand(DissectedLine dissectedLine) {
     CommandTokens commandTokens;
     Operation *command = malloc(sizeof(Operation));
-    int l = 0;
-    char encoding[100];
+    char encodedOpcode[9];
+    int opcodeLen;
     if (dissectCommand(dissectedLine.command, &commandTokens) != 0) {
         return -1;
     }
@@ -134,13 +135,12 @@ int handleCommand(DissectedLine dissectedLine) {
     if (verifyArguments(command, &commandTokens) != 0) {
         return -1;
     }
-
-    if (encodeCommandPass1(command, commandTokens) != 0) {
+    if (encodeCommandPass1(command, commandTokens, encodedOpcode, &opcodeLen) != 0) {
         return -1;
     }
 
-    memcpy(&(getState()->currentByteCode[getState()->IC]), encoding, l);
-    getState()->IC += l;
+    memcpy(&(getState()->currentByteCode[getState()->IC]), encodedOpcode, opcodeLen);
+    getState()->IC += opcodeLen;
 
     /*
      * TODO:
@@ -154,12 +154,14 @@ int handleCommand(DissectedLine dissectedLine) {
      */
     return 0;
 }
+
 /**
  * Returns 2 if an argument doesn't need a data byte, 0 on success, and -1 on failiure.
  */
-int buildDataByte(DataByte *databyte, Argument arg) {
-    databyte->data = arg.value;
-    switch(arg.addressing) {
+int buildDataByte(Argument arg, EncodedArg *databyte) {
+    enum bool isExternal = TRUE;
+    databyte->data = (arg.addressing == AT_IMMEDIATE) ? arg.value.scalar : 0;
+    switch (arg.addressing) {
         case AT_IMMEDIATE:
             databyte->A = 1;
             databyte->E = 0;
@@ -169,8 +171,8 @@ int buildDataByte(DataByte *databyte, Argument arg) {
             databyte->A = 0;
             /* internal: R; external: E */
             /* TODO: add external check */
-            databyte->E = 0;
-            databyte->R = 0;
+            databyte->E = isExternal == TRUE ? 1 : 0;
+            databyte->R = isExternal == TRUE ? 0 : 1;
             break;
         case AT_RELATIVE:
             databyte->A = 1;
@@ -187,56 +189,64 @@ int buildDataByte(DataByte *databyte, Argument arg) {
     return 0;
 }
 
-int encodeCommandPass1(Operation *command, CommandTokens args) {
-    DataByte data1, data2;
-    int code;
+int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcode[9], int *opcodeLen) {
+    EncodedOperation operation;
+    EncodedArg arg[2];
+    int numArgs = 0;
+    int retVal;
     /* start building bytecode*/
-    getState()->currentByteCode->opcode = command->opcode;
-    getState()->currentByteCode->funct = command->funct;
+    operation.opcode = command->opcode;
+    operation.funct = command->funct;
     if (args.numArgs < 1) { /* if we don't have args, empty all relevant fields */
-        getState()->currentByteCode->destAddressing = 0;
-        getState()->currentByteCode->destRegister = 0;
-        getState()->currentByteCode->srcAddressing = 0;
-        getState()->currentByteCode->srcRegister = 0;
+        operation.destAddressing = 0;
+        operation.destRegister = 0;
+        operation.srcAddressing = 0;
+        operation.srcRegister = 0;
     }
-    if(args.numArgs == 1) {/* if we have only one arg, it's dest */
-        getState()->currentByteCode->destRegister = args.arg1Data.reg;
-        getState()->currentByteCode->destAddressing = args.arg1Data.addressing;
+    if (args.numArgs == 1) {/* if we have only one arg, it's dest */
+        numArgs = 1;
+        operation.destRegister = args.arg1Data.reg;
+        operation.destAddressing = args.arg1Data.addressing;
 
-        code = buildDataByte(&data1, args.arg1Data);
-        if(code == -1) {
+        retVal = buildDataByte(args.arg1Data, &arg[0]);
+        if (retVal == -1) {
             return -1;
-        } else if(code != 2) {
-            getState()->dataBytes[0] = &data1;
+        } else if (retVal != 2) {
+            numArgs = 0;
+        }
+    } else if (args.numArgs == 2) {/* if we have two args, then */
+        numArgs = 2;
+        operation.srcRegister = args.arg1Data.reg;
+        operation.srcAddressing = args.arg1Data.addressing;
+
+        retVal = buildDataByte(args.arg1Data, &arg[0]);
+        if (retVal == -1) {
+            return -1;
+        } else if (retVal != 2) {
+            numArgs--;
+        }
+
+        operation.destRegister = args.arg2Data.reg;
+        operation.destAddressing = args.arg2Data.addressing;
+
+        retVal = buildDataByte(args.arg2Data, &arg[numArgs - 1]);
+        if (retVal == -1) {
+            return -1;
+        } else if (retVal != 2) {
+            numArgs--;
         }
     }
-    if(args.numArgs == 2) {/* if we have two args, then */
-        int idx = 0;
-        getState()->currentByteCode->srcRegister = args.arg1Data.reg;
-        getState()->currentByteCode->srcAddressing = args.arg1Data.addressing;
 
-        code = buildDataByte(&data1, args.arg1Data);
-        if(code == -1) {
-            return -1;
-        } else if(code != 2) {
-            getState()->dataBytes[idx] = &data1;
-            idx++;
-        }
-
-        getState()->currentByteCode->destRegister = args.arg2Data.reg;
-        getState()->currentByteCode->destAddressing = args.arg2Data.addressing;
-
-        code = buildDataByte(&data2, args.arg2Data);
-        if(code == -1) {
-            return -1;
-        } else if(code != 2) {
-            getState()->dataBytes[idx] = &data2;
-        }
+    *opcodeLen = 1;
+    memcpy(encodedOpcode, &operation, sizeof(operation));
+    if (numArgs > 0) {
+        memcpy(encodedOpcode + sizeof(operation), &arg[0], sizeof(EncodedArg));
+        (*opcodeLen)++;
     }
-
-
-
-    /* TODO*/
+    if (numArgs > 1) {
+        memcpy(encodedOpcode + sizeof(operation) + sizeof(EncodedArg), &arg[1], sizeof(EncodedArg));
+        (*opcodeLen)++;
+    }
     return 0;
 }
 

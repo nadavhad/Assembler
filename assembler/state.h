@@ -7,5 +7,4 @@ void initializeState();
 State *getState();
 int getLineNumber();
 void incLineNumber();
-ByteCode *getCurrentBytecode();
 #endif /*SHAREDFOLDER_STATE_H*/

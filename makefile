@@ -1,4 +1,4 @@
-assembler.out: out/errorlog.o out/assembler.o out/state.o out/dissector.o out/symbolTable.o
+out/assembler.out: out/errorlog.o out/assembler.o out/state.o out/dissector.o out/symbolTable.o
 	mkdir -p out
 	gcc -g  -Wall -ansi -pedantic out/errorlog.o out/assembler.o out/state.o out/dissector.o out/symbolTable.o -o out/assembler.out
 
@@ -29,5 +29,8 @@ out/unit.out: unit.c assembler/symbolTable.h out/symbolTable.o out/state.o
 
 clean:
 	rm -rf out/*
+
+check: out/assembler.out
+	./out/assembler.out test
 
 $(V).SILENT:

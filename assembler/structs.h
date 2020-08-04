@@ -63,31 +63,30 @@ typedef struct {
 } Operation;
 
 typedef struct {
-    unsigned int E : 1;
-    unsigned int R : 1;
-    unsigned int A : 1;
-    unsigned int funct : 5;
-    unsigned int destRegister : 3;
-    unsigned int destAddressing : 2;
-    unsigned int srcRegister : 3;
-    unsigned int srcAddressing : 2;
-    unsigned int opcode : 6;
-} ByteCode;
+    unsigned int E: 1;
+    unsigned int R: 1;
+    unsigned int A: 1;
+    unsigned int funct: 5;
+    unsigned int destRegister: 3;
+    unsigned int destAddressing: 2;
+    unsigned int srcRegister: 3;
+    unsigned int srcAddressing: 2;
+    unsigned int opcode: 6;
+} EncodedOperation;
 
 
 typedef struct {
-    unsigned int E : 1;
-    unsigned int R : 1;
-    unsigned int A : 1;
-    Data data;
-} DataByte;
+    unsigned int E: 1;
+    unsigned int R: 1;
+    unsigned int A: 1;
+    unsigned int data: 21;
+} EncodedArg;
 
 typedef struct {
     int lineNumber;
     int IC;
     int DC;
-    ByteCode currentByteCode[8192];
-    DataByte *dataBytes[2];
+    char currentByteCode[8192];
 } State;
 
 

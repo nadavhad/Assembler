@@ -78,7 +78,7 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
         dissectedLine->lineType = LT_COMMENT;
         return 0;
     }
-    /*accumulator = malloc(sizeof(char[MAX_LINE_LENGTH]));*/
+    accumulator = malloc(sizeof(char[MAX_LINE_LENGTH]));
     index = 0;
     while (!(END(*iterator))) {
         /* accumulate until reaching end or colon, assign accumulator accordingly*/
