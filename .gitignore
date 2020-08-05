@@ -55,3 +55,4 @@ cmake-build-debug/
 CMakeLists.txt
 .idea/
 out/assembler
+/cmake-build-debug-visual-studio/
