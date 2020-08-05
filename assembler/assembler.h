@@ -16,7 +16,12 @@ void initializeFirstPass();
 
 int handleDirective(DissectedLine dissectedLine);
 
-int handleDirectiveLabelFirstPass(DissectedLine line);
+
+typedef struct {
+    int x;
+} DirectiveType;
+
+int handleDirectiveLabelFirstPass(DissectedLine line, DirectiveType directiveType);
 
 int handleCommand(DissectedLine dissectedLine);
 

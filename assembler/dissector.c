@@ -63,7 +63,7 @@ int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
 }
 
 int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
-    char *accumulator;
+    char accumulator[MAX_LINE_LENGTH];
     char *iterator = rawLine;
     int index = 0;
 
@@ -78,8 +78,8 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
         dissectedLine->lineType = LT_COMMENT;
         return 0;
     }
-    accumulator = malloc(sizeof(char[MAX_LINE_LENGTH]));
     index = 0;
+    memset(accumulator, 0, sizeof(accumulator));
     while (!(END(*iterator))) {
         /* accumulate until reaching end or colon, assign accumulator accordingly*/
         if (*iterator == ':') {
@@ -88,7 +88,7 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
             if (validateLabel(dissectedLine->label) == -1) {
                 return -1;
             }
-            accumulator = malloc(sizeof(char[MAX_LINE_LENGTH]));
+            memset(accumulator, 0, sizeof(accumulator));
             index = 0;
         }
         accumulator[index] = *iterator;

@@ -19,16 +19,38 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  *
  * N d 2. handleCmdLabelFirstPass
  * N d 3. handleDirectiveLabelFirstPass
- * Y i 4. Build opcode skeleton
- *     0. Return data for each argument (addressing, register value, value)
- *     a. Opcode, funct, ARE, Addressing, registers,
- *     b. Arguments
+ * Y d 4. Build opcode skeleton
+ *   d  0. Return data for each argument (addressing, register value, value)
+ *   d  a. Opcode, funct, ARE, Addressing, registers,
+ *   d  b. Arguments
  * N d 5. Update symbol table
  * N d 6. Update code skeleton
  * N d 7. Update state (IC)
  *
+ *     8. Handle directives
+ * N    9. Check directive type
+ * N    10. For .entry, extern
+ * N      10.1 Parse line
+ * N      10.2 validate label  (and no more)
+ * N      10.3 for .entry - continue
+ * N            Validate no label BEFORE
+ * N      10.4. For .extern - Add to symbol table (value 0, as extern) - if symbol already exists (only as an extern(?)) it's OK. Do nothing.
+ * N            Validate no label BEFORE
+ *     11. .data, .string
+ * Y       Write readNumber() to read positive/negative numbers
+ * Y       Later use that in IMMEDIATE addressing as well
+ * Y      11.1 Add data array to state
+ * Y      11.2 .data - parse data (comma separated numbers), add to Data array, increment DC by data size
+ * Y      11.3 .string - parse data (quoted string), add to Data array, add terminating 0, increment DC by data size + 1
  *
- * X. Handle directives
+ *
+ * N    X. Save ICF, DCF
+ *
+ *
+ *
+ *
+ *     X. Free lists (error log, symbol table, etc.)
+ *     X. Document
  */
 
 int main(int argc, char **argv) {
@@ -64,10 +86,13 @@ int processAssemblyFile(char *fileName) {
  *  First pass
  */
 
+int getDirectiveType(DissectedLine dissectedLine, DirectiveType *directiveType) { return 0; }
+
 int firstPass(char *fileName) {
     FILE *file;
     char line[MAX_LINE_LENGTH];
     DissectedLine dissectedLine;
+    DirectiveType directiveType;
     file = fopen(fileName, "r");
     if (file == NULL) {
         perror(fileName);
@@ -90,12 +115,16 @@ int firstPass(char *fileName) {
             case LT_COMMENT:
                 break;
             case LT_COMMAND:
-                handleCmdLabelFirstPass(dissectedLine);
-                handleCommand(dissectedLine);
+                if (handleCmdLabelFirstPass(dissectedLine) == 0) {
+                    handleCommand(dissectedLine);
+                }
                 break;
             case LT_DIRECTIVE:
-                handleDirectiveLabelFirstPass(dissectedLine);
-                handleDirective(dissectedLine);
+                if (getDirectiveType(dissectedLine, &directiveType) == 0) {
+                    if (handleDirectiveLabelFirstPass(dissectedLine, directiveType) == 0) {
+                        handleDirective(dissectedLine);
+                    }
+                }
                 break;
         }
     }
@@ -123,19 +152,19 @@ int handleCmdLabelFirstPass(DissectedLine dissectedLine) {
 
 int handleCommand(DissectedLine dissectedLine) {
     CommandTokens commandTokens;
-    Operation *command = malloc(sizeof(Operation));
+    Operation command;
     char encodedOpcode[9];
     int opcodeLen;
     if (dissectCommand(dissectedLine.command, &commandTokens) != 0) {
         return -1;
     }
-    if (findOperation(commandTokens.command, command) != 0) {
+    if (findOperation(commandTokens.command, &command) != 0) {
         return -1;
     }
-    if (verifyArguments(command, &commandTokens) != 0) {
+    if (verifyArguments(&command, &commandTokens) != 0) {
         return -1;
     }
-    if (encodeCommandPass1(command, commandTokens, encodedOpcode, &opcodeLen) != 0) {
+    if (encodeCommandPass1(&command, commandTokens, encodedOpcode, &opcodeLen) != 0) {
         return -1;
     }
 
@@ -242,7 +271,6 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
     }
 
     *opcodeLen = 3;
-    printf("%x\n", operation);/*?????*/
     memcpy(encodedOpcode, &operation, 3);
     if (numArgs > 0) {
         memcpy(encodedOpcode + 3, &arg[0], 3);
@@ -414,7 +442,7 @@ int handleDirective(DissectedLine dissectedLine) {
 
 }
 
-int handleDirectiveLabelFirstPass(DissectedLine dissectedLine) {
+int handleDirectiveLabelFirstPass(DissectedLine dissectedLine, DirectiveType directiveType) {
     /*TODO: handle .entry*/
     if (addSymbol(dissectedLine.label, getState()->DC, ST_DATA, FALSE) != 0) {
         return -1;
