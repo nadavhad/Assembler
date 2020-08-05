@@ -211,7 +211,7 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
         retVal = buildDataByte(args.arg1Data, &arg[0]);
         if (retVal == -1) {
             return -1;
-        } else if (retVal != 2) {
+        } else if (retVal == 2) {
             numArgs = 0;
         }
     } else if (args.numArgs == 2) {/* if we have two args, then */
@@ -222,7 +222,7 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
         retVal = buildDataByte(args.arg1Data, &arg[0]);
         if (retVal == -1) {
             return -1;
-        } else if (retVal != 2) {
+        } else if (retVal == 2) {
             numArgs--;
         }
 
@@ -232,20 +232,20 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
         retVal = buildDataByte(args.arg2Data, &arg[numArgs - 1]);
         if (retVal == -1) {
             return -1;
-        } else if (retVal != 2) {
+        } else if (retVal == 2) {
             numArgs--;
         }
     }
 
-    *opcodeLen = 1;
+    *opcodeLen = 3;
     memcpy(encodedOpcode, &operation, sizeof(operation));
     if (numArgs > 0) {
         memcpy(encodedOpcode + sizeof(operation), &arg[0], sizeof(EncodedArg));
-        (*opcodeLen)++;
+        (*opcodeLen) += 3;
     }
     if (numArgs > 1) {
         memcpy(encodedOpcode + sizeof(operation) + sizeof(EncodedArg), &arg[1], sizeof(EncodedArg));
-        (*opcodeLen)++;
+        (*opcodeLen) += 3;
     }
     return 0;
 }
