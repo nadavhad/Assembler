@@ -39,7 +39,7 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  *     11. .data, .string
  * Y       Write readNumber() to read positive/negative numbers
  * Y       Later use that in IMMEDIATE addressing as well
- * Y      11.1 Add data array to state
+ * Y  d    11.1 Add data array to state
  * Y      11.2 .data - parse data (comma separated numbers), add to Data array, increment DC by data size
  * Y      11.3 .string - parse data (quoted string), add to Data array, add terminating 0, increment DC by data size + 1
  *

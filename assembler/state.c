@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include "structs.h"
 #include "../logging/errorlog.h"
 #include <string.h>

@@ -87,6 +87,7 @@ typedef struct {
     int IC;
     int DC;
     char currentByteCode[8192];
+    char dataByteCode[4096];
 } State;
 
 
