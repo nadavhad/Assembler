@@ -1,6 +1,6 @@
 out/assembler.out: out/errorlog.o out/assembler.o out/state.o out/dissector.o out/symbolTable.o
 	mkdir -p out
-	gcc -g  -O0 -Wall -ansi -pedantic logging/errorlog.c assembler/assembler.c assembler/state.c assembler/dissector.c assembler/symbolTable.c -Ilogging -Iassembler -o out/assembler.out
+	gcc -g  -Wall -ansi -pedantic logging/errorlog.c assembler/assembler.c assembler/state.c assembler/dissector.c assembler/symbolTable.c -Ilogging -Iassembler -o out/assembler.out
 
 out/errorlog.o: logging/errorlog.c logging/errorlog.h
 	mkdir -p out

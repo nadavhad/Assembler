@@ -1,6 +1,8 @@
+add r2, #127
 jmp 1, r1
 
 jmp #1
+
 
 rxc 111
 wrt

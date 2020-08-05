@@ -166,6 +166,7 @@ int buildDataByte(Argument arg, EncodedArg *databyte) {
             databyte->A = 1;
             databyte->E = 0;
             databyte->R = 0;
+            databyte->data = arg.value.scalar;
             break;
         case AT_DIRECT:
             databyte->A = 0;
@@ -195,6 +196,9 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
     int numArgs = 0;
     int retVal;
     /* start building bytecode*/
+    operation.A = 1;
+    operation.R = 0;
+    operation.E = 0;
     operation.opcode = command->opcode;
     operation.funct = command->funct;
     if (args.numArgs < 1) { /* if we don't have args, empty all relevant fields */
@@ -238,13 +242,14 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
     }
 
     *opcodeLen = 3;
-    memcpy(encodedOpcode, &operation, sizeof(operation));
+    printf("%x\n", operation);/*?????*/
+    memcpy(encodedOpcode, &operation, 3);
     if (numArgs > 0) {
-        memcpy(encodedOpcode + sizeof(operation), &arg[0], sizeof(EncodedArg));
+        memcpy(encodedOpcode + 3, &arg[0], 3);
         (*opcodeLen) += 3;
     }
     if (numArgs > 1) {
-        memcpy(encodedOpcode + sizeof(operation) + sizeof(EncodedArg), &arg[1], sizeof(EncodedArg));
+        memcpy(encodedOpcode + 6, &arg[1], 3);
         (*opcodeLen) += 3;
     }
     return 0;
@@ -349,12 +354,14 @@ int verifyArguments(Operation *op, CommandTokens *commandTokens) {
     }
 
     if (op->numArgs > 0) {
-        int *addressing = op->srcAddressing;
         if (op->srcAddressing[0] == AT_UNSET) {
-            addressing = op->destAddressing;
-        }
-        if (!matchesAddressing(addressing, commandTokens->arg1, &commandTokens->arg1Data)) {
-            return -1;
+            if (matchesAddressing(op->destAddressing, commandTokens->arg1, &commandTokens->arg1Data) != 0) {
+                return -1;
+            }
+        } else {
+            if (matchesAddressing(op->srcAddressing, commandTokens->arg1, &commandTokens->arg1Data) != 0) {
+                return -1;
+            }
         }
     }
 
