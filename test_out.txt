@@ -1,9 +1,9 @@
 Errors:
-1: Wrong argument type
+1: Wrong argument type: 0
 2: Wrong number of arguments for jmp. Expected: 1 Got: 2
-4: Wrong argument type
-6: Undefined operation: rxc
-7: Undefined operation: wrt
-8: Illegal comma
-10: Multiple consecutive commas
-12: Extraneous text after end of command
+7: Wrong argument type: 0
+9: Undefined operation: rxc
+10: Undefined operation: wrt
+11: Illegal comma
+13: Multiple consecutive commas
+15: Extraneous text after end of command

@@ -7,6 +7,7 @@
 #include "../logging/errorlog.h"
 
 #include "macros.h"
+
 int validateLabel(char *label);
 
 unsigned int getJumpDistance(const char *string) {
@@ -34,12 +35,12 @@ int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
             argument->addressing = AT_IMMEDIATE;
             argument->value.scalar = strtol((raw_arg + 1), NULL, 10);
             return 0;
-        } else ERROR_ARG("Argument addressed with # must be a number, not: ", raw_arg)
+        } else ERROR_RET((_, "Argument addressed with # must be a number, not: %s", raw_arg));
     } else if (raw_arg[0] == '&') {
         argument->addressing = AT_RELATIVE;
         strcpy(argument->value.symbol, &raw_arg[1]);
         if (validateLabel(argument->value.symbol) == -1) {
-            ERROR_ARG("Invalid label: ", argument->value.symbol)
+            ERROR_RET((_, "Invalid label: %s", argument->value.symbol));
         }
         return 0;
     }
@@ -48,7 +49,7 @@ int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
         argument->addressing = AT_DIRECT;
         strcpy(argument->value.symbol, raw_arg);
         if (validateLabel(argument->value.symbol) == -1) {
-            ERROR_ARG("Invalid label: ", argument->value.symbol)
+            ERROR_RET((_, "Invalid label: %s", argument->value.symbol));
         }
     }
     return 0;
@@ -59,6 +60,7 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
     char *iterator = rawLine;
     int index = 0;
 
+    memset(dissectedLine->label, 0, sizeof(dissectedLine->label));
     /* strip leading whitespace */
     while (WHT(*iterator)) {
         iterator = iterator + 1;
@@ -82,6 +84,10 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
             }
             memset(accumulator, 0, sizeof(accumulator));
             index = 0;
+            iterator++;
+            while (WHT(*iterator)) {
+                iterator = iterator + 1;
+            }
         }
         accumulator[index] = *iterator;
 
@@ -138,25 +144,28 @@ int validateLabel(char *label) {
      *  b. not command
      *  c. not directive
      */
-    if (!(isalpha(label[0]))) ERROR_ARG("Illegal label, labels must start with a letter. Label: ", label)
+    if (!(isalpha(label[0]))) ERROR_RET((_, "Illegal label, labels must start with a letter. Label: %s", label));
 
-    if (strlen(label) > MAX_LABEL_LENGTH) ERROR_ARG("Illegal label, max label length is 31 characters. Label: ", label)
+    if (strlen(label) > MAX_LABEL_LENGTH) ERROR_RET(
+            (_, "Illegal label, max label length is 31 characters. Label: %s", label));
 
-    if (/* label is duplicate*/0) ERROR_ARG(
-            "Illegal label, duplicate labels aren't allowed and this label already exists: ", label)
+    if (/* label is duplicate*/0) ERROR_RET((_,
+            "Illegal label, duplicate labels aren't allowed and this label already exists: %s", label));
 
     if ((strlen(label) == 3)
         && (label[0] == 'r')
-        && ((label[1] >= '0') && (label[1] <= '7'))) ERROR_ARG(
-            "Illegal label, label cannot be a register name. Label: ", label)
+        && ((label[1] >= '0') && (label[1] <= '7'))) ERROR_RET((_,
+            "Illegal label, label cannot be a register name. Label: %s", label));
 
     for (i = 0; i < NUM_OPERATIONS; i++) {
-        if (strcmp(label, ops[i].name) == 0) ERROR_ARG("Illegal label, label cannot be a command name. Label: ", label)
+        if (strcmp(label, ops[i].name) == 0) ERROR_RET(
+                (_, "Illegal label, label cannot be a command name. Label: %s", label));
     }
 
     for (i = 0; i < 5; i++) {
-        if (strcmp(label, directives[i]) == 0) ERROR_ARG("Illegal label, label cannot be a directive name. Label: ",
-                                                         label)
+        if (strcmp(label, directives[i]) == 0) ERROR_RET(
+                (_, "Illegal label, label cannot be a directive name. Label: %s",
+                        label));
     }
     return 0;
 }

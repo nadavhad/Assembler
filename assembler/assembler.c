@@ -85,7 +85,7 @@ int getDirectiveType(DissectedLine dissectedLine, DissectedDirective *directive)
     /* Tokenize the line into: directive and directive arguments */
     /* Find the directive token. */
     memset(directive->directiveToken, 0, sizeof(directive->directiveToken));
-    while (!END(*iterator) && (index < sizeof(directive->directiveToken + 1))) {
+    while (!END(*iterator) && !WHT(*iterator) && (index < sizeof(directive->directiveToken + 1))) {
         directive->directiveToken[index] = *iterator;
         index++;
         iterator++;
@@ -104,7 +104,7 @@ int getDirectiveType(DissectedLine dissectedLine, DissectedDirective *directive)
         directive->type = DT_EXTERN;
     } else {
         directive->type = DT_UNDEFINED;
-        ERROR_ARG("Invalid directive: ", directive->directiveToken);
+        ERROR_RET((_, "Invalid directive: %s", directive->directiveToken));
     }
     return 0;
 }
@@ -382,8 +382,7 @@ int tokenizeParams(char *remainder, CommandTokens *parsedCommand) {
     }
     /* We have an extra parameter after the last valid token. */
     if (parsedCommand->numArgs > MAX_PARAMS - 1) {
-        logError(getLineNumber(), "Extraneous text after end of command");
-        return -1;
+        ERROR_RET((_, "Extraneous text after end of command. Too many parameters"));
     }
     if (charIndex > 0) {
         parsedCommand->numArgs++;
@@ -432,8 +431,7 @@ int matchesAddressing(int validAddressingArr[5], char *arg, Argument *argData) {
             return 0;
         }
     }
-    logError(getLineNumber(), "Wrong argument type");
-    return -1;
+    ERROR_RET((_, "Wrong argument type: %d", argData->addressing));
 }
 
 
