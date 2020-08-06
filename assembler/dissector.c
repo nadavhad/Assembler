@@ -6,15 +6,7 @@
 #include "state.h"
 #include "../logging/errorlog.h"
 
-#define NUM_OPERATIONS 16
-#define EQ(c, n) ((c) == (n))
-#define EOS(c) EQ(c,'\0')
-#define eqEOF(c) EQ(c, EOF)
-#define EOL(c) EQ(c,'\n')
-
-#define END(c) (EOS(c) || eqEOF(c) || EOL(c))
-#define WHT(c) (EQ(c, ' ') || EQ(c, '\t'))
-
+#include "macros.h"
 int validateLabel(char *label);
 
 unsigned int getJumpDistance(const char *string) {
@@ -80,7 +72,7 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
     }
     index = 0;
     memset(accumulator, 0, sizeof(accumulator));
-    while (!(END(*iterator))) {
+    while (!END(*iterator)) {
         /* accumulate until reaching end or colon, assign accumulator accordingly*/
         if (*iterator == ':') {
             /* if has a label, fill label field with accumulator and reset accumulator */

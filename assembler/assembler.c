@@ -6,6 +6,8 @@
 #include "state.h"
 #include "../logging/errorlog.h"
 #include "symbolTable.h"
+#include "macros.h"
+
 
 int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcode[9], int *opcodeLen);
 
@@ -28,7 +30,7 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  * N d 7. Update state (IC)
  *
  *     8. Handle directives
- * N    9. Check directive type
+ * N d   9. Check directive type
  * N    10. For .entry, extern
  * N      10.1 Parse line
  * N      10.2 validate label  (and no more)
@@ -52,15 +54,6 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  *     X. Free lists (error log, symbol table, etc.)
  *     X. Document
  */
-
-int main(int argc, char **argv) {
-    int i = 0;
-    for (i = 1; i < argc; ++i) {
-        processAssemblyFile(argv[i]);
-    }
-
-    return 0;
-}
 
 int processAssemblyFile(char *fileName) {
     if (firstPass(fileName) != 0) {
@@ -86,13 +79,41 @@ int processAssemblyFile(char *fileName) {
  *  First pass
  */
 
-int getDirectiveType(DissectedLine dissectedLine, DirectiveType *directiveType) { return 0; }
+int getDirectiveType(DissectedLine dissectedLine, DissectedDirective *directive) {
+    int index = 0;
+    char *iterator = dissectedLine.command;
+    /* Tokenize the line into: directive and directive arguments */
+    /* Find the directive token. */
+    memset(directive->directiveToken, 0, sizeof(directive->directiveToken));
+    while (!END(*iterator) && (index < sizeof(directive->directiveToken + 1))) {
+        directive->directiveToken[index] = *iterator;
+        index++;
+        iterator++;
+    }
+    /* Store the directive "argument" - the rest of the line. */
+    memcpy(directive->directiveArgs, iterator, strlen(iterator));
+
+    /* Find the directive type */
+    if (strcmp(directive->directiveToken, DATA) == 0) {
+        directive->type = DT_DATA;
+    } else if (strcmp(directive->directiveToken, STRING) == 0) {
+        directive->type = DT_STRING;
+    } else if (strcmp(directive->directiveToken, ENTRY) == 0) {
+        directive->type = DT_ENTRY;
+    } else if (strcmp(directive->directiveToken, EXTERN) == 0) {
+        directive->type = DT_EXTERN;
+    } else {
+        directive->type = DT_UNDEFINED;
+        ERROR_ARG("Invalid directive: ", directive->directiveToken);
+    }
+    return 0;
+}
 
 int firstPass(char *fileName) {
     FILE *file;
     char line[MAX_LINE_LENGTH];
     DissectedLine dissectedLine;
-    DirectiveType directiveType;
+    DissectedDirective dissectedDirective;
     file = fopen(fileName, "r");
     if (file == NULL) {
         perror(fileName);
@@ -120,8 +141,8 @@ int firstPass(char *fileName) {
                 }
                 break;
             case LT_DIRECTIVE:
-                if (getDirectiveType(dissectedLine, &directiveType) == 0) {
-                    if (handleDirectiveLabelFirstPass(dissectedLine, directiveType) == 0) {
+                if (getDirectiveType(dissectedLine, &dissectedDirective) == 0) {
+                    if (handleDirectiveLabelFirstPass(dissectedLine, dissectedDirective) == 0) {
                         handleDirective(dissectedLine);
                     }
                 }
@@ -442,7 +463,7 @@ int handleDirective(DissectedLine dissectedLine) {
 
 }
 
-int handleDirectiveLabelFirstPass(DissectedLine dissectedLine, DirectiveType directiveType) {
+int handleDirectiveLabelFirstPass(DissectedLine dissectedLine, DissectedDirective dissectedDirective) {
     /*TODO: handle .entry*/
     if (addSymbol(dissectedLine.label, getState()->DC, ST_DATA, FALSE) != 0) {
         return -1;

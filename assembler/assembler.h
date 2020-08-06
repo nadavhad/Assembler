@@ -3,6 +3,11 @@
 #ifndef ASSEMBLER_ASSEMBLER_H
 #define ASSEMBLER_ASSEMBLER_H
 
+#define DATA ".data"
+#define STRING ".string"
+#define ENTRY ".entry"
+#define EXTERN ".extern"
+
 
 int processAssemblyFile(char *string);
 
@@ -17,11 +22,21 @@ void initializeFirstPass();
 int handleDirective(DissectedLine dissectedLine);
 
 
-typedef struct {
-    int x;
-} DirectiveType;
+enum DirectiveType {
+    DT_UNDEFINED,
+    DT_DATA,
+    DT_STRING,
+    DT_ENTRY,
+    DT_EXTERN
+};
 
-int handleDirectiveLabelFirstPass(DissectedLine line, DirectiveType directiveType);
+typedef struct {
+    enum DirectiveType type;
+    char directiveToken[10];
+    char directiveArgs[80];
+} DissectedDirective;
+
+int handleDirectiveLabelFirstPass(DissectedLine line, DissectedDirective dissectedDirective);
 
 int handleCommand(DissectedLine dissectedLine);
 
