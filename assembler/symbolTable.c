@@ -29,7 +29,8 @@ struct Node *createNode(char name[MAX_LABEL_LENGTH], int value, LineType type, e
 
 int addSymbol(char name[MAX_LABEL_LENGTH], int value, SymbolType type, enum bool isEntry) {
     struct Node *lastNode;
-    if(strlen(name) == 0) { /* if label is empty, don't add it to the table */
+    struct Node *existingNode;
+    if (strlen(name) == 0) { /* if label is empty, don't add it to the table */
         return 0;
     }
     if (_head == NULL) {
@@ -38,13 +39,13 @@ int addSymbol(char name[MAX_LABEL_LENGTH], int value, SymbolType type, enum bool
     }
 
     /* Check if already exists (and log error), Otherwise - add at the end.*/
-    if (lookUpNode(name, &lastNode) != NULL) {
-        char buf[100];
-        sprintf(buf, "Label '%s' already exists", name);
-        logError(getLineNumber(), buf);
-        return -1;
+    existingNode = lookUpNode(name, &lastNode);
+    if (existingNode != NULL) {
+        if ((type == ST_EXTERNAL) && (existingNode->data.type == ST_EXTERNAL)) {
+            return 0;
+        }
+        ERROR_RET((_, "Label '%s' already exists", name));
     }
-
     lastNode->next = createNode(name, value, type, isEntry);
     return 0;
 }

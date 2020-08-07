@@ -19,22 +19,7 @@ int handleCmdLabelFirstPass(DissectedLine dissectedLine);
 
 void initializeFirstPass();
 
-int handleDirective(DissectedLine dissectedLine);
-
-
-enum DirectiveType {
-    DT_UNDEFINED,
-    DT_DATA,
-    DT_STRING,
-    DT_ENTRY,
-    DT_EXTERN
-};
-
-typedef struct {
-    enum DirectiveType type;
-    char directiveToken[10];
-    char directiveArgs[80];
-} DissectedDirective;
+int handleDirective(DissectedDirective dissectedDirective);
 
 int handleDirectiveLabelFirstPass(DissectedLine line, DissectedDirective dissectedDirective);
 

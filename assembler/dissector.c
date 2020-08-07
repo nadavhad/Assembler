@@ -28,12 +28,14 @@ int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
         return 0;
     } else if (raw_arg[0] == '#') {
         i = 1;
+        /* TODO(fix): Fix this! does not handle +/- prefix*/
         while (isdigit(*(raw_arg + i))) {
             i++;
         }
         if (*(raw_arg + i) == '\0') {
             argument->addressing = AT_IMMEDIATE;
             argument->value.scalar = strtol((raw_arg + 1), NULL, 10);
+            /* TODO(fix): Call strtol in advance and check by the second argument value if there is anything after that (validate there isn't)*/
             return 0;
         } else ERROR_RET((_, "Argument addressed with # must be a number, not: %s", raw_arg));
     } else if (raw_arg[0] == '&') {
@@ -45,7 +47,7 @@ int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
         return 0;
     }
 
-    if (requiresLabel(raw_arg) != 0) {
+    if (requiresLabel(raw_arg) != 0) { /*TODO(fix): This is not implemented (and what does it mean??), so this code will never be called. */
         argument->addressing = AT_DIRECT;
         strcpy(argument->value.symbol, raw_arg);
         if (validateLabel(argument->value.symbol) == -1) {

@@ -29,6 +29,21 @@ typedef struct {
     LineType lineType;
 } DissectedLine;
 
+
+enum DirectiveType {
+    DT_UNDEFINED,
+    DT_DATA,
+    DT_STRING,
+    DT_ENTRY,
+    DT_EXTERN
+};
+
+typedef struct {
+    enum DirectiveType type;
+    char directiveToken[10];
+    char directiveArgs[MAX_LINE_LENGTH];
+} DissectedDirective;
+
 enum ArgumentPosition {
     AP_SRC = 1, AP_DEST = 2
 };

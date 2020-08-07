@@ -32,12 +32,12 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  *     8. Handle directives
  * N d   9. Check directive type
  * N    10. For .entry, extern
- * N      10.1 Parse line
- * N      10.2 validate label  (and no more)
- * N      10.3 for .entry - continue
+ * N d     10.1 Parse line
+ * N d     10.2 validate label  (and no more)
+ * N d     10.3 for .entry - continue
  * N            Validate no label BEFORE
- * N      10.4. For .extern - Add to symbol table (value 0, as extern) - if symbol already exists (only as an extern(?)) it's OK. Do nothing.
- * N            Validate no label BEFORE
+ * N d     10.4. For .extern - Add to symbol table (value 0, as extern) - if symbol already exists (only as an extern(?)) it's OK. Do nothing.
+ * N           Validate no label BEFORE
  *     11. .data, .string
  * Y       Write readNumber() to read positive/negative numbers
  * Y       Later use that in IMMEDIATE addressing as well
@@ -79,19 +79,34 @@ int processAssemblyFile(char *fileName) {
  *  First pass
  */
 
+int stripWhiteSpaces(char *rawStr, char stripped[MAX_LINE_LENGTH]){
+    char *end;
+    memset(stripped, 0, MAX_LINE_LENGTH);
+    while (WHT(*rawStr) && !EOS(*rawStr) && !END(*rawStr)) {
+        rawStr++;
+    }
+    strncpy(stripped, rawStr, MAX_LINE_LENGTH);
+    end = stripped + strlen(stripped)-1;
+    while (WHT(*end)) {
+        *end = 0;
+        end--;
+    }
+    return 0;
+}
+
 int getDirectiveType(DissectedLine dissectedLine, DissectedDirective *directive) {
     int index = 0;
     char *iterator = dissectedLine.command;
     /* Tokenize the line into: directive and directive arguments */
     /* Find the directive token. */
     memset(directive->directiveToken, 0, sizeof(directive->directiveToken));
-    while (!END(*iterator) && !WHT(*iterator) && (index < sizeof(directive->directiveToken + 1))) {
+    while (!END(*iterator) && !WHT(*iterator) && (index < (sizeof(directive->directiveToken)-1))) {
         directive->directiveToken[index] = *iterator;
         index++;
         iterator++;
     }
     /* Store the directive "argument" - the rest of the line. */
-    memcpy(directive->directiveArgs, iterator, strlen(iterator));
+    stripWhiteSpaces(iterator, directive->directiveArgs);
 
     /* Find the directive type */
     if (strcmp(directive->directiveToken, DATA) == 0) {
@@ -143,7 +158,7 @@ int firstPass(char *fileName) {
             case LT_DIRECTIVE:
                 if (getDirectiveType(dissectedLine, &dissectedDirective) == 0) {
                     if (handleDirectiveLabelFirstPass(dissectedLine, dissectedDirective) == 0) {
-                        handleDirective(dissectedLine);
+                        handleDirective(dissectedDirective);
                     }
                 }
                 break;
@@ -455,15 +470,38 @@ int dissectCommand(char *commandStr, CommandTokens *parsedCommand) {
 /*----------------------
  *  Directives
  */
-int handleDirective(DissectedLine dissectedLine) {
+int handleDirective(DissectedDirective dissectedDirective) {
+    if ((dissectedDirective.type == DT_ENTRY) || (dissectedDirective.type == DT_EXTERN)) {
+        if (validateLabel(dissectedDirective.directiveArgs) != 0) {
+            ERROR_RET((_, "%s requires a valid label. Got %s instead", (dissectedDirective.type == DT_ENTRY) ? ".entry"
+                                                                                                             : ".extern",
+                    dissectedDirective.directiveArgs));
+        }
+    }
+    if(dissectedDirective.type == DT_ENTRY){
+        return 0;
+    }
+    if(dissectedDirective.type == DT_EXTERN){
+        addSymbol(dissectedDirective.directiveArgs,0,dissectedDirective.type,FALSE);
+        return 0;
+    }
     return 0;
     /* TODO: Implement*/
 
 }
 
 int handleDirectiveLabelFirstPass(DissectedLine dissectedLine, DissectedDirective dissectedDirective) {
-    /*TODO: handle .entry*/
-    if (addSymbol(dissectedLine.label, getState()->DC, ST_DATA, FALSE) != 0) {
+    enum bool isEntry = FALSE;
+    /* Any label before .entry/.extern is ignored. We issue a warning to the user. */
+    if ((dissectedDirective.type == DT_ENTRY) || (dissectedDirective.type == DT_EXTERN)) {
+        if (strlen(dissectedLine.label) == 0) {
+            printf("%d: Warning: There is a label before %s - it will be ignored", getLineNumber(),
+                   (dissectedDirective.type == DT_ENTRY) ? ".entry" : ".extern");
+        }
+        return 0;
+    }
+
+    if (addSymbol(dissectedLine.label, getState()->DC, ST_DATA, isEntry) != 0) {
         return -1;
     }
     return 0;
