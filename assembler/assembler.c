@@ -31,13 +31,13 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  *
  *     8. Handle directives
  * N d   9. Check directive type
- * N    10. For .entry, extern
+ * N d  10. For .entry, extern
  * N d     10.1 Parse line
  * N d     10.2 validate label  (and no more)
  * N d     10.3 for .entry - continue
- * N            Validate no label BEFORE
+ * N d          Validate no label BEFORE
  * N d     10.4. For .extern - Add to symbol table (value 0, as extern) - if symbol already exists (only as an extern(?)) it's OK. Do nothing.
- * N           Validate no label BEFORE
+ * N d          Validate no label BEFORE
  *     11. .data, .string
  * Y       Write readNumber() to read positive/negative numbers
  * Y       Later use that in IMMEDIATE addressing as well
@@ -526,9 +526,4 @@ int secondPass(char *fileName) {
             return 0;
         }
     }
-}
-
-int requiresLabel(const char *label) {
-    /*TODO*/
-    return 0;
 }

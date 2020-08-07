@@ -23,21 +23,21 @@ int main() {
     return 0;
 }
 
-void expect(char *s1, char *s2) {
+void expect(char *testName, char *s1, char *s2) {
     if (strcmp(s1, s2) == 0) {
-        printf("Succeeded: %s\n", s2);
+        printf("(%s) Succeeded: %s\n", testName, s2);
     } else {
-        printf("stripWhiteSpacesTest Error: expected <%s>, gor <%s>\n", s1, s2);
+        printf("(%s) Error: expected <%s>, gor <%s>\n", testName, s1, s2);
     }
 }
 void stripWhiteSpacesTest() {
     char buf[MAX_LINE_LENGTH];
     stripWhiteSpaces("   POPOP   ", buf);
-    expect(buf, "POPOP");
+    expect("stripWhiteSpacesTest", buf, "POPOP");
     stripWhiteSpaces("  a bc   34, f", buf);
-    expect(buf, "a bc   34, f");
+    expect("stripWhiteSpacesTest", buf, "a bc   34, f");
     stripWhiteSpaces("  5,g \n 43 98 ", buf);
-    expect(buf,"5,g \n 43 98");
+    expect("stripWhiteSpacesTest", buf,"5,g \n 43 98");
 
 
 
@@ -62,7 +62,6 @@ void getDirectiveTypeTest() {
         } else {
             flush();
         }
-
     }
     {
         DissectedLine line3 = {"Lar", ".extern JKHK", LT_DIRECTIVE};
@@ -70,6 +69,7 @@ void getDirectiveTypeTest() {
         if (getDirectiveType(line3, &directive3) == 0) {
             printf("directive type is %s (%d)\n", (directive3.type == DT_EXTERN) ? "Correct" : "Incorrect",
                    directive3.type);
+            expect("getDirectiveType", directive3.directiveArgs, "JKHK");
         } else {
             flush();
         }
@@ -80,6 +80,7 @@ void getDirectiveTypeTest() {
         if (getDirectiveType(line4, &directive4) == 0) {
             printf("directive type is %s (%d)\n", (directive4.type == DT_DATA) ? "Correct" : "Incorrect",
                    directive4.type);
+            expect("getDirectiveType", directive4.directiveArgs, "66, 7, 887");
         } else {
             flush();
         }

@@ -21,23 +21,19 @@ unsigned int getAddress(const char *arg) {
 }
 
 int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
-    int i;
+    char *endptr;
     if ((raw_arg[0] == 'r') && (strlen(raw_arg) == 2) && (raw_arg[1] >= '0') && (raw_arg[1] <= '7')) {
         argument->addressing = AT_REGISTER;
         argument->reg = raw_arg[1] - '0';
         return 0;
     } else if (raw_arg[0] == '#') {
-        i = 1;
-        /* TODO(fix): Fix this! does not handle +/- prefix*/
-        while (isdigit(*(raw_arg + i))) {
-            i++;
+        argument->value.scalar = strtol((raw_arg + 1), &endptr, 10);
+        if ((endptr == (raw_arg + 1)) || (*endptr != 0)) {
+            ERROR_RET((_, "Argument addressed with # must be a number, not: %s", raw_arg));
         }
-        if (*(raw_arg + i) == '\0') {
-            argument->addressing = AT_IMMEDIATE;
-            argument->value.scalar = strtol((raw_arg + 1), NULL, 10);
-            /* TODO(fix): Call strtol in advance and check by the second argument value if there is anything after that (validate there isn't)*/
-            return 0;
-        } else ERROR_RET((_, "Argument addressed with # must be a number, not: %s", raw_arg));
+
+        argument->addressing = AT_IMMEDIATE;
+        return 0;
     } else if (raw_arg[0] == '&') {
         argument->addressing = AT_RELATIVE;
         strcpy(argument->value.symbol, &raw_arg[1]);
@@ -47,13 +43,12 @@ int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
         return 0;
     }
 
-    if (requiresLabel(raw_arg) != 0) { /*TODO(fix): This is not implemented (and what does it mean??), so this code will never be called. */
-        argument->addressing = AT_DIRECT;
-        strcpy(argument->value.symbol, raw_arg);
-        if (validateLabel(argument->value.symbol) == -1) {
-            ERROR_RET((_, "Invalid label: %s", argument->value.symbol));
-        }
+    if (validateLabel(argument->value.symbol) == -1) {
+        ERROR_RET((_, "Invalid label: %s", argument->value.symbol));
     }
+    argument->addressing = AT_DIRECT;
+    strcpy(argument->value.symbol, raw_arg);
+
     return 0;
 }
 
@@ -185,4 +180,16 @@ int findOperation(char *cmd, Operation *op) {
     strcat(errormsg, cmd);
     logError(getLineNumber(), errormsg);
     return -1;
+}
+
+int parseString(char *string) {
+    int start, end;
+    start = 0;
+    end = strlen(string) - 1;
+    while (isspace(string[start]) == 1) { start++; }
+    while (isspace(string[end]) == 1) { end--; }
+    if ((string[start] == '\"') && (string[end] == '\"')) {
+
+    }
+    return 0;
 }
