@@ -4,12 +4,6 @@
 #define ASSEMBLER_PARSING_H
 
 /**
- * Declares that a certain label should exist. If doesn't exist, will error
- * @return
- */
-int requiresLabel(const char *);
-
-/**
  * Splits a line of assembly code into a struct containing the label and command (with its args)
  * and also identifies the coarse line type.
  * rawLine - Input line
@@ -29,7 +23,6 @@ int dissectCommand(char *line, CommandTokens *);
  * @return 0 on success, -1 on failure
  */
 int findOperation(char *, Operation *);
-
 
 /**
  * Finds the addressing type of the argument, and checks its validity.

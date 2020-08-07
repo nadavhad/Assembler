@@ -97,13 +97,4 @@ typedef struct {
     unsigned int data: 21;
 } EncodedArg;
 
-typedef struct {
-    int lineNumber;
-    int IC;
-    int DC;
-    char currentByteCode[8192];
-    char dataByteCode[4096];
-} State;
-
-
 #endif /*ASSEMBLER_STRUCTS_H*/

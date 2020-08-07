@@ -12,13 +12,19 @@
 int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcode[9], int *opcodeLen);
 
 /**
+ * ASK:
+ *    Can we use a contiguous array for data as well as code?
+ *    Are .data numbers limited to char size? if so - what is the range? [-254, 255]/[-127, 128]/else
+ *    Should we support escape sequences for .string? if so - which escapes? "\""? "\n"` etc.
+ *
  * TODO:
+ * N   Add .as to input files
+ * N   Check that each input line length is under than 80
  * Y d 0. Check if a label is valid (reserved words)
  * N d 1. Create symbol table (linked list. Data {Name, Value, Type, IsEntry})
- *      AddSymbol(name, value, type, entry) => error if label exists
- *      LookupSymbol(name)
- *      UpdateSymbol(name, value)
- *
+ *   d  AddSymbol(name, value, type, entry) => error if label exists
+ *   d  LookupSymbol(name)
+ *   d  UpdateSymbol(name, value)
  * N d 2. handleCmdLabelFirstPass
  * N d 3. handleDirectiveLabelFirstPass
  * Y d 4. Build opcode skeleton
@@ -28,7 +34,6 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  * N d 5. Update symbol table
  * N d 6. Update code skeleton
  * N d 7. Update state (IC)
- *
  *     8. Handle directives
  * N d   9. Check directive type
  * N d  10. For .entry, extern
@@ -39,18 +44,21 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  * N d     10.4. For .extern - Add to symbol table (value 0, as extern) - if symbol already exists (only as an extern(?)) it's OK. Do nothing.
  * N d          Validate no label BEFORE
  *     11. .data, .string
- * Y       Write readNumber() to read positive/negative numbers
- * Y       Later use that in IMMEDIATE addressing as well
+ * Y       Write readNumber() to read positive/negative numbers (Can also use strtol)
+ * Y  d    Later use that in IMMEDIATE addressing as well
  * Y  d    11.1 Add data array to state
  * Y      11.2 .data - parse data (comma separated numbers), add to Data array, increment DC by data size
+ *             Loop
+ *                  strtol, check we got a number
+ *                  Strip, make sure the string is empty or starts with ','
+ *                  "eat" the comma
  * Y      11.3 .string - parse data (quoted string), add to Data array, add terminating 0, increment DC by data size + 1
- *
- *
+ *             Strip
+ *             Make sure that starts and ends with "
+ *             Remove quotes
+ *             Make sure no quotes in the string
  * N    X. Save ICF, DCF
- *
- *
- *
- *
+ * N    X Write tests (for stage 1)
  *     X. Free lists (error log, symbol table, etc.)
  *     X. Document
  */
@@ -79,14 +87,14 @@ int processAssemblyFile(char *fileName) {
  *  First pass
  */
 
-int stripWhiteSpaces(char *rawStr, char stripped[MAX_LINE_LENGTH]){
+int stripWhiteSpaces(char *rawStr, char stripped[MAX_LINE_LENGTH]) {
     char *end;
     memset(stripped, 0, MAX_LINE_LENGTH);
     while (WHT(*rawStr) && !EOS(*rawStr) && !END(*rawStr)) {
         rawStr++;
     }
     strncpy(stripped, rawStr, MAX_LINE_LENGTH);
-    end = stripped + strlen(stripped)-1;
+    end = stripped + strlen(stripped) - 1;
     while (WHT(*end)) {
         *end = 0;
         end--;
@@ -100,7 +108,7 @@ int getDirectiveType(DissectedLine dissectedLine, DissectedDirective *directive)
     /* Tokenize the line into: directive and directive arguments */
     /* Find the directive token. */
     memset(directive->directiveToken, 0, sizeof(directive->directiveToken));
-    while (!END(*iterator) && !WHT(*iterator) && (index < (sizeof(directive->directiveToken)-1))) {
+    while (!END(*iterator) && !WHT(*iterator) && (index < (sizeof(directive->directiveToken) - 1))) {
         directive->directiveToken[index] = *iterator;
         index++;
         iterator++;
@@ -471,22 +479,25 @@ int dissectCommand(char *commandStr, CommandTokens *parsedCommand) {
  *  Directives
  */
 int handleDirective(DissectedDirective dissectedDirective) {
+    /* Handle .entry, .extern */
     if ((dissectedDirective.type == DT_ENTRY) || (dissectedDirective.type == DT_EXTERN)) {
         if (validateLabel(dissectedDirective.directiveArgs) != 0) {
-            ERROR_RET((_, "%s requires a valid label. Got %s instead", (dissectedDirective.type == DT_ENTRY) ? ".entry"
-                                                                                                             : ".extern",
+            ERROR_RET((_, "%s requires a valid label. Got %s instead",
+                    (dissectedDirective.type == DT_ENTRY) ? ENTRY : EXTERN,
                     dissectedDirective.directiveArgs));
         }
     }
-    if(dissectedDirective.type == DT_ENTRY){
+    if (dissectedDirective.type == DT_ENTRY) {
         return 0;
     }
-    if(dissectedDirective.type == DT_EXTERN){
-        addSymbol(dissectedDirective.directiveArgs,0,dissectedDirective.type,FALSE);
+    if (dissectedDirective.type == DT_EXTERN) {
+        addSymbol(dissectedDirective.directiveArgs, 0, dissectedDirective.type, FALSE);
         return 0;
     }
+
+    /* TODO(yotam): Implement .data, .string*/
+
     return 0;
-    /* TODO: Implement*/
 
 }
 
@@ -495,7 +506,7 @@ int handleDirectiveLabelFirstPass(DissectedLine dissectedLine, DissectedDirectiv
     /* Any label before .entry/.extern is ignored. We issue a warning to the user. */
     if ((dissectedDirective.type == DT_ENTRY) || (dissectedDirective.type == DT_EXTERN)) {
         if (strlen(dissectedLine.label) == 0) {
-            printf("%d: Warning: There is a label before %s - it will be ignored", getLineNumber(),
+            printf("%d: Warning: There is a label before %s - it will be ignored\n", getLineNumber(),
                    (dissectedDirective.type == DT_ENTRY) ? ".entry" : ".extern");
         }
         return 0;
