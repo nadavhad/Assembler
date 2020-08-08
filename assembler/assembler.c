@@ -52,11 +52,11 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  *                  strtol, check we got a number
  *                  Strip, make sure the string is empty or starts with ','
  *                  "eat" the comma
- * Y      11.3 .string - parse data (quoted string), add to Data array, add terminating 0, increment DC by data size + 1
- *             Strip
- *             Make sure that starts and ends with "
- *             Remove quotes
- *             Make sure no quotes in the string
+ * Y  d    11.3 .string - parse data (quoted string), add to Data array, add terminating 0, increment DC by data size + 1
+ *    d         Strip
+ *    d         Make sure that starts and ends with "
+ *    d         Remove quotes
+ *    d         Make sure no quotes in the string
  * N    X. Save ICF, DCF
  * N    X Write tests (for stage 1)
  *     X. Free lists (error log, symbol table, etc.)
@@ -496,6 +496,37 @@ int handleDirective(DissectedDirective dissectedDirective) {
     }
 
     /* TODO(yotam): Implement .data, .string*/
+    if (dissectedDirective.type == DT_STRING) {
+        char *stripped = "";
+        stripWhiteSpaces(dissectedDirective.directiveArgs, stripped);
+        if (stripped[0] == '\"') {
+            char *endquote = strchr((stripped + 1), '\"');
+            if (endquote == NULL) {
+                /* there is no second (closing) quote */
+                ERROR_RET((_, "Cannot find terminating \'\"\' in string"));
+            } else if (endquote[1] == 0) {
+                /* if the last char is a quote, then the string ends with a quote */
+                /* TODO: log symbol with current DC */
+                while (*stripped != '\"') {
+                    /* until we reach the end quote */
+                    memset(&(getState()->dataByteCode[getState()->DC]), *endquote, sizeof(char));
+                    getState()->DC++;
+                    stripped++;
+                }
+                /* add terminating zero */
+                memset(&(getState()->dataByteCode[getState()->DC]), 0, sizeof(char));
+                getState()->DC++;
+            } else {
+                /* if a " is before the end of the stripped string,
+                 * then there are chars after it */
+                ERROR_RET((_, "Found terminating \'\"\' in the middle of a string"));
+            }
+        } else {
+            /* if the first character after stripping isn't ", then there either isn't one
+            * or there are chars before it. */
+            ERROR_RET((_, "Cannot find starting \'\"\'"));
+        }
+    }
 
     return 0;
 
