@@ -2,9 +2,10 @@
 #include "errorlog.h"
 #include <string.h>
 #include <stdio.h>
-#include <assembler.h>
+#include "assembler.h"
 
 int getDirectiveType(DissectedLine dissectedLine, DissectedDirective *directive);
+
 int stripWhiteSpaces(char *rawStr, char stripped[MAX_LINE_LENGTH]);
 
 
@@ -14,12 +15,16 @@ void getDirectiveTypeTest();
 
 void stripWhiteSpacesTest();
 
+void handleDirectiveTest();
+
 int main() {
     addSymbolTest();
 
     getDirectiveTypeTest();
 
     stripWhiteSpacesTest();
+
+    handleDirectiveTest();
     return 0;
 }
 
@@ -30,6 +35,7 @@ void expect(char *testName, char *s1, char *s2) {
         printf("(%s) Error: expected <%s>, gor <%s>\n", testName, s1, s2);
     }
 }
+
 void stripWhiteSpacesTest() {
     char buf[MAX_LINE_LENGTH];
     stripWhiteSpaces("   POPOP   ", buf);
@@ -37,8 +43,7 @@ void stripWhiteSpacesTest() {
     stripWhiteSpaces("  a bc   34, f", buf);
     expect("stripWhiteSpacesTest", buf, "a bc   34, f");
     stripWhiteSpaces("  5,g \n 43 98 ", buf);
-    expect("stripWhiteSpacesTest", buf,"5,g \n 43 98");
-
+    expect("stripWhiteSpacesTest", buf, "5,g \n 43 98");
 
 
 }
@@ -48,7 +53,8 @@ void getDirectiveTypeTest() {
         DissectedLine line1 = {"", ".entr", LT_DIRECTIVE};
         DissectedDirective directive;
         if (getDirectiveType(line1, &directive) == 0) {
-            printf("directive type is %s (%d)\n", (directive.type == DT_UNDEFINED)? "Correct":"Incorrect", directive.type);
+            printf("directive type is %s (%d)\n", (directive.type == DT_UNDEFINED) ? "Correct" : "Incorrect",
+                   directive.type);
         } else {
             flush();
         }
@@ -58,7 +64,8 @@ void getDirectiveTypeTest() {
         DissectedLine line2 = {"LOOP", ".entry", LT_DIRECTIVE};
         DissectedDirective directive2;
         if (getDirectiveType(line2, &directive2) == 0) {
-            printf("directive type is %s (%d)\n", (directive2.type == DT_ENTRY)? "Correct":"Incorrect", directive2.type);
+            printf("directive type is %s (%d)\n", (directive2.type == DT_ENTRY) ? "Correct" : "Incorrect",
+                   directive2.type);
         } else {
             flush();
         }
@@ -115,3 +122,26 @@ void addSymbolTest() {
     }
 }
 
+void handleDirectiveTest() {
+    {
+        DissectedDirective directive0 = {DT_ENTRY, "", "ABC"};
+        if (handleDirective(directive0) != 0) {
+            printf("handleDirectiveTest#1 failed...\n");
+        }
+
+    }
+
+    {
+        DissectedDirective directive1 = {DT_DATA, "", "   1, -3\t, 4"};
+        if (handleDirective(directive1) != 0) {
+            printf("handleDirectiveTest#2 failed...\n");
+        }
+    }
+
+    {
+        DissectedDirective directive2 = {DT_STRING, "", "\" heeeeee\""};
+        if (handleDirective(directive2) != 0) {
+            printf("handleDirectiveTest#3 failed...\n");
+        }
+    }
+}
