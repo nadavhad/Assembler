@@ -47,11 +47,11 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  * Y       Write readNumber() to read positive/negative numbers (Can also use strtol)
  * Y  d    Later use that in IMMEDIATE addressing as well
  * Y  d    11.1 Add data array to state
- * Y      11.2 .data - parse data (comma separated numbers), add to Data array, increment DC by data size
- *             Loop
- *                  strtol, check we got a number
- *                  Strip, make sure the string is empty or starts with ','
- *                  "eat" the comma
+ * Y  d    11.2 .data - parse data (comma separated numbers), add to Data array, increment DC by data size
+ *    d         Loop
+ *    d              strtol, check we got a number
+ *    d              Strip, make sure the string is empty or starts with ','
+ *    d              "eat" the comma
  * Y  d    11.3 .string - parse data (quoted string), add to Data array, add terminating 0, increment DC by data size + 1
  *    d         Strip
  *    d         Make sure that starts and ends with "
@@ -528,7 +528,32 @@ int handleDirective(DissectedDirective dissectedDirective) {
         }
     }
 
-    return 0;
+    if (dissectedDirective.type == DT_DATA) {
+        char *stripped = "";
+        stripWhiteSpaces(dissectedDirective.directiveArgs, stripped);
+        while(stripped[0] != 0) {
+            char* iterator = stripped;
+            strtol(stripped, &iterator, 10);
+            if ((iterator == stripped) || /* TODO: I don't think this check is correct */(*iterator != 0)) {
+                ERROR_RET((_, "Entries in \".data\" must be numbers"));
+            }
+            stripWhiteSpaces(iterator, stripped);/* TODO: fix whitespace stripping */
+            if (stripped[0] == ',') {
+                stripped++;
+                continue;
+            } else if (stripped[0] == 0) {
+                /* finished data parsing */
+                return 0;
+            } else {
+                /* error - expected end or ','. */
+                ERROR_RET((_, "Unexpected chars: "))
+            }
+        }
+        /* empty .data : warning? */
+        return 0;
+    }
+    /* invalid DirectiveType */
+    ERROR_RET((_, "Unexpected value: "));
 
 }
 
