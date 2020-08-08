@@ -497,14 +497,14 @@ int handleDirective(DissectedDirective dissectedDirective) {
 
     /* TODO(yotam): Implement .data, .string*/
     if (dissectedDirective.type == DT_STRING) {
-        char *stripped = "";
+        char *stripped = calloc(MAX_LINE_LENGTH, sizeof(char));
         stripWhiteSpaces(dissectedDirective.directiveArgs, stripped);
         if (stripped[0] == '\"') {
             char *endquote = strchr((stripped + 1), '\"');
             if (endquote == NULL) {
                 /* there is no second (closing) quote */
                 ERROR_RET((_, "Cannot find terminating \'\"\' in string"));
-            } else if (endquote[1] == 0) {
+            } else if (*(endquote+1) == 0) {
                 /* if the last char is a quote, then the string ends with a quote */
                 /* TODO: log symbol with current DC */
                 while (*stripped != '\"') {
@@ -516,10 +516,11 @@ int handleDirective(DissectedDirective dissectedDirective) {
                 /* add terminating zero */
                 memset(&(getState()->dataByteCode[getState()->DC]), 0, sizeof(char));
                 getState()->DC++;
+                return 0;
             } else {
                 /* if a " is before the end of the stripped string,
                  * then there are chars after it */
-                ERROR_RET((_, "Found terminating \'\"\' in the middle of a string"));
+                ERROR_RET((_, "Found terminating \'\"\' in the middle of a string: %i", *(endquote+1)));
             }
         } else {
             /* if the first character after stripping isn't ", then there either isn't one
@@ -529,12 +530,12 @@ int handleDirective(DissectedDirective dissectedDirective) {
     }
 
     if (dissectedDirective.type == DT_DATA) {
-        char *stripped = "";
+        char *stripped = calloc(MAX_LINE_LENGTH, sizeof(char));
         stripWhiteSpaces(dissectedDirective.directiveArgs, stripped);
-        while(stripped[0] != 0) {
-            char* iterator = stripped;
+        while (stripped[0] != 0) {
+            char *iterator = stripped;
             strtol(stripped, &iterator, 10);
-            if ((iterator == stripped) || /* TODO: I don't think this check is correct */(*iterator != 0)) {
+            if (iterator == stripped) {
                 ERROR_RET((_, "Entries in \".data\" must be numbers"));
             }
             stripWhiteSpaces(iterator, stripped);/* TODO: fix whitespace stripping */
