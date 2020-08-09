@@ -497,7 +497,8 @@ int handleDirective(DissectedDirective dissectedDirective) {
 
     /* TODO(yotam): Implement .data, .string*/
     if (dissectedDirective.type == DT_STRING) {
-        char *stripped = calloc(MAX_LINE_LENGTH, sizeof(char));
+        char strippedBuf[MAX_LINE_LENGTH];
+        char *stripped = strippedBuf;
         stripWhiteSpaces(dissectedDirective.directiveArgs, stripped);
         if (stripped[0] == '\"') {
             char *endquote = strchr((stripped + 1), '\"');
@@ -530,7 +531,8 @@ int handleDirective(DissectedDirective dissectedDirective) {
     }
 
     if (dissectedDirective.type == DT_DATA) {
-        char *stripped = calloc(MAX_LINE_LENGTH, sizeof(char));
+        char strippedBuf[MAX_LINE_LENGTH];
+        char *stripped = strippedBuf;
         stripWhiteSpaces(dissectedDirective.directiveArgs, stripped);
         while (stripped[0] != 0) {
             char *iterator = stripped;
