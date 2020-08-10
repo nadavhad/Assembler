@@ -8,7 +8,7 @@
 
 #include "macros.h"
 
-int validateLabel(char *label);
+int validateLabel(const char *label);
 
 unsigned int getJumpDistance(const char *string) {
     /*TODO*/
@@ -22,6 +22,10 @@ unsigned int getAddress(const char *arg) {
 
 int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
     char *endptr;
+    argument->addressing = AT_UNSET;
+    argument->position = 0;
+    argument->reg = 0;
+    argument->value.scalar = 0;
     if ((raw_arg[0] == 'r') && (strlen(raw_arg) == 2) && (raw_arg[1] >= '0') && (raw_arg[1] <= '7')) {
         argument->addressing = AT_REGISTER;
         argument->reg = raw_arg[1] - '0';
@@ -43,7 +47,7 @@ int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
         return 0;
     }
 
-    if (validateLabel(argument->value.symbol) == -1) {
+    if (validateLabel(raw_arg) == -1) {
         ERROR_RET((_, "Invalid label: %s", argument->value.symbol));
     }
     argument->addressing = AT_DIRECT;
@@ -129,7 +133,7 @@ static char directives[4][7] = {
         "string",
 };
 
-int validateLabel(char *label) {
+int validateLabel(const char *label) {
     int i;
     /*
      * Demands:
