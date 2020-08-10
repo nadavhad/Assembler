@@ -18,8 +18,8 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  *    Should we support escape sequences for .string? if so - which escapes? "\""? "\n"` etc.
  *
  * TODO:
- * N   Add .as to input files
- * N   Check that each input line length is under than 80
+ * N d Add .as to input files
+ * N d Check that each input line length is under than 80
  * Y d 0. Check if a label is valid (reserved words)
  * N d 1. Create symbol table (linked list. Data {Name, Value, Type, IsEntry})
  *   d  AddSymbol(name, value, type, entry) => error if label exists
@@ -45,19 +45,19 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  * N d          Validate no label BEFORE
  *     11. .data, .string
  * Y       Write readNumber() to read positive/negative numbers (Can also use strtol)
- * Y  d    Later use that in IMMEDIATE addressing as well
- * Y  d    11.1 Add data array to state
- * Y  d    11.2 .data - parse data (comma separated numbers), add to Data array, increment DC by data size
- *    d         Loop
- *    d              strtol, check we got a number
- *    d              Strip, make sure the string is empty or starts with ','
- *    d              "eat" the comma
- * Y  d    11.3 .string - parse data (quoted string), add to Data array, add terminating 0, increment DC by data size + 1
- *    d         Strip
- *    d         Make sure that starts and ends with "
- *    d         Remove quotes
- *    d         Make sure no quotes in the string
- * N    X. Save ICF, DCF
+ * Y d    Later use that in IMMEDIATE addressing as well
+ * Y d    11.1 Add data array to state
+ * Y d    11.2 .data - parse data (comma separated numbers), add to Data array, increment DC by data size
+ *   d         Loop
+ *   d              strtol, check we got a number
+ *   d              Strip, make sure the string is empty or starts with ','
+ *   d              "eat" the comma
+ * Y d    11.3 .string - parse data (quoted string), add to Data array, add terminating 0, increment DC by data size + 1
+ *   d         Strip
+ *   d         Make sure that starts and ends with "
+ *   d         Remove quotes
+ *   d         Make sure no quotes in the string
+ * N d X. Save ICF, DCF
  * N    X Write tests (for stage 1)
  *     X. Free lists (error log, symbol table, etc.)
  *     X. Document
@@ -148,6 +148,8 @@ int firstPass(char *fileName) {
         if (fgets(line, MAX_LINE_LENGTH, file) == NULL) {
             /* We got to the end of a file. */
             fclose(file);
+            getState()->ICF = getState()->IC;
+            getState()->DCF = getState()->DC;
             return 0;
         }
         incLineNumber();
@@ -208,6 +210,7 @@ int handleCommand(DissectedLine dissectedLine) {
     if (verifyArguments(&command, &commandTokens) != 0) {
         return -1;
     }
+
     if (encodeCommandPass1(&command, commandTokens, encodedOpcode, &opcodeLen) != 0) {
         return -1;
     }

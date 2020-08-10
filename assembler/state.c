@@ -13,6 +13,8 @@ void initializeState() {
     getState()->lineNumber = 0;
     getState()->DC = 0;
     getState()->IC = 100;
+    getState()->DCF = -1;
+    getState()->ICF = -1;
     memset(getState()->currentByteCode, 0, sizeof(getState()->currentByteCode));
 }
 

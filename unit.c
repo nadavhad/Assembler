@@ -17,7 +17,13 @@ void stripWhiteSpacesTest();
 
 void handleDirectiveTest();
 
+int toBinary(int n, char binary[24]);
+
+void expect(char *testName, char *s1, char *s2);
+
 int main() {
+    char binary[32];
+    int word;
     addSymbolTest();
 
     getDirectiveTypeTest();
@@ -25,6 +31,38 @@ int main() {
     stripWhiteSpacesTest();
 
     handleDirectiveTest();
+
+    toBinary(5, binary);
+    expect("toBinary", binary, "00000000000000000000000000000101");
+    toBinary(500, binary);
+    expect("toBinary", binary, "00000000000000000000000111110100");
+    toBinary(56784567, binary);
+    expect("toBinary", binary, "00000011011000100111011010110111");
+
+    if (firstPass("unitTest.as") == -1) {
+        flush();
+        return 0;
+    }
+    memcpy(&word, getState()->currentByteCode, 4);
+    printf(">>> %x%x%x%x\n", getState()->currentByteCode[0], getState()->currentByteCode[1], getState()->currentByteCode[2], getState()->currentByteCode[3]);
+    printf(">>> %x\n", *(int*)(getState()->currentByteCode));
+    printf(">>> %x\n", word);
+    toBinary(word, binary);
+    expect("word[0]", binary, "0");
+   return 0;
+}
+
+int toBinary(int n, char binary[32]) {
+    int c, k;
+    binary[0] = 0;
+    for (c = 31; c >= 0; c--) {
+        k = n >> c;
+
+        if (k & 1)
+            strcat(binary, "1");
+        else
+            strcat(binary, "0");
+    }
     return 0;
 }
 
@@ -32,7 +70,7 @@ void expect(char *testName, char *s1, char *s2) {
     if (strcmp(s1, s2) == 0) {
         printf("(%s) Succeeded: %s\n", testName, s2);
     } else {
-        printf("(%s) Error: expected <%s>, gor <%s>\n", testName, s1, s2);
+        printf("(%s) Error: expected <%s>, got <%s>\n", testName, s2, s1);
     }
 }
 

@@ -5,6 +5,8 @@ typedef struct {
     int lineNumber;
     int IC;
     int DC;
+    int ICF;
+    int DCF;
     char currentByteCode[8192];
     char dataByteCode[4096];
 } State;
