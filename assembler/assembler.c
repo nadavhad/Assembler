@@ -272,6 +272,9 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
     int numArgs = 0;
     int retVal;
     memset(encodedOpcode, 0, 9);
+    memset(&operation, 0, sizeof(operation));
+    memset(&arg[0], 0, sizeof(arg[0]));
+    memset(&arg[1], 0, sizeof(arg[1]));
     /* start building bytecode*/
     operation.A = 1;
     operation.R = 0;

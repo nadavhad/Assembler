@@ -47,12 +47,84 @@ int main() {
         word = 0;
         memcpy(&word, &getState()->currentByteCode[ic], 3);
         toBinary(word, binary);
-        expect("word[1]", binary, "00000000000000000000000000000001");
+        expect("word[1]", binary, "00000000000000000000000000000001");/*TODO: will only work in second pass*/
         ic += 3;
         word = 0;
         memcpy(&word, &getState()->currentByteCode[ic], 3);
         toBinary(word, binary);
         expect("word[2]", binary, "00000000001101000000000000000100");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[3]", binary, "00000000000000000000000110000100");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[4]", binary, "00000000000100010001111000000100");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[5]", binary, "00000000000000000000000000000001");/*TODO: will only work in second pass*/
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[6]", binary, "00000000000101000001111000011100");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[7]", binary, "00000000000000110110100000000100");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[8]", binary, "00000000000000000000000000000001");/*TODO: will only work in second pass*/
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[9]", binary, "00000000000010110011110000010100");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[10]", binary, "00000000001001000000100000010100");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[11]", binary, "00000000000000000000000000000001");/*TODO: will only work in second pass*/
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[12]", binary, "00000000000001010000000000000100");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[13]", binary, "00000000000000000000000000000001");/*TODO: will only work in second pass*/
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[12]", binary, "00000000111111111111111111010100");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[14]", binary, "00000000001001000001000000010100");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[15]", binary, "00000000000000000000000000000100");/*TODO: will only work in second pass*/
+
+
     }
    return 0;
 }
@@ -75,7 +147,9 @@ void expect(char *testName, char *s1, char *s2) {
     if (strcmp(s1, s2) == 0) {
         printf("(%s) Succeeded: %s\n", testName, s2);
     } else {
-        printf("(%s) Error: expected <%s>, got <%s>\n", testName, s2, s1);
+        printf("(%s) Error:\n", testName);
+        printf("   expected <%s>\n", s2);
+        printf("   got      <%s>\n", s1);
     }
 }
 
@@ -149,17 +223,17 @@ void getDirectiveTypeTest() {
 
 void addSymbolTest() {
     SymbolData symData;
-    addSymbol("MAIN", 3, LT_COMMAND, FALSE);
-    if (lookUp("MAIN", &symData) != 0) {
+    addSymbol("GMAIN", 3, LT_COMMAND, FALSE);
+    if (lookUp("GMAIN", &symData) != 0) {
         printf("Error: Symbol not found!\n");
         flush();
     }
 
-    if (addSymbol("LOOP", 98, LT_COMMAND, FALSE) != 0) {
+    if (addSymbol("GLOOP", 98, LT_COMMAND, FALSE) != 0) {
         printf("Error: Failed adding symbol\n");
         flush();
     }
-    if (lookUp("LOOP", &symData) != 0) {
+    if (lookUp("GLOOP", &symData) != 0) {
         printf("Error: Symbol not found!\n");
         flush();
     }
