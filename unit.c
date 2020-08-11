@@ -32,14 +32,6 @@ int main() {
 
     handleDirectiveTest();
 
-    toBinary(5, binary);
-    expect("toBinary", binary, "00000000000000000000000000000101");
-    toBinary(500, binary);
-    expect("toBinary", binary, "00000000000000000000000111110100");
-    toBinary(56784567, binary);
-    expect("toBinary", binary, "00000011011000100111011010110111");
-
-
     {
         int ic = 100;
         if (firstPass("unitTest.as") == -1) {
@@ -55,7 +47,12 @@ int main() {
         word = 0;
         memcpy(&word, &getState()->currentByteCode[ic], 3);
         toBinary(word, binary);
-        expect("word[0]", binary, "00000000000000000000000000000001");
+        expect("word[1]", binary, "00000000000000000000000000000001");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[2]", binary, "00000000001101000000000000000100");
     }
    return 0;
 }
