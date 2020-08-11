@@ -39,16 +39,24 @@ int main() {
     toBinary(56784567, binary);
     expect("toBinary", binary, "00000011011000100111011010110111");
 
-    if (firstPass("unitTest.as") == -1) {
-        flush();
-        return 0;
+
+    {
+        int ic = 100;
+        if (firstPass("unitTest.as") == -1) {
+            flush();
+            return 0;
+        }
+
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[0]", binary, "00000000000010110110100000001100");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[0]", binary, "00000000000000000000000000000001");
     }
-    memcpy(&word, getState()->currentByteCode, 4);
-    printf(">>> %x%x%x%x\n", getState()->currentByteCode[0], getState()->currentByteCode[1], getState()->currentByteCode[2], getState()->currentByteCode[3]);
-    printf(">>> %x\n", *(int*)(getState()->currentByteCode));
-    printf(">>> %x\n", word);
-    toBinary(word, binary);
-    expect("word[0]", binary, "0");
    return 0;
 }
 

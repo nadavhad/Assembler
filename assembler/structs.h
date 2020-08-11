@@ -49,7 +49,7 @@ enum ArgumentPosition {
 };
 typedef union {
     int scalar;
-    char *symbol;
+    char symbol[10];
 } Data;
 
 typedef struct {

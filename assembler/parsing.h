@@ -34,6 +34,6 @@ int findArgumentAddressingType(const char *, Argument *);
  * Validate that the argument is a valid label (no reserved words, alphanumric characters, etc.)
  * @return 0 is valid, 1 otherwise.
  */
-int validateLabel(char *label);
+int validateLabel(const char *label);
 
 #endif /*ASSEMBLER_PARSING_H*/

@@ -232,10 +232,10 @@ int handleCommand(DissectedLine dissectedLine) {
 }
 
 /**
- * Returns 2 if an argument doesn't need a data byte, 0 on success, and -1 on failiure.
+ * Returns 2 if an argument doesn't need a data byte, 0 on success, and -1 on failure.
  */
 int buildDataByte(Argument arg, EncodedArg *databyte) {
-    enum bool isExternal = TRUE;
+    enum bool isExternal = TRUE; /* TODO: Set isExternal to something real */
     databyte->data = (arg.addressing == AT_IMMEDIATE) ? arg.value.scalar : 0;
     switch (arg.addressing) {
         case AT_IMMEDIATE:
@@ -271,6 +271,7 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
     EncodedArg arg[2];
     int numArgs = 0;
     int retVal;
+    memset(encodedOpcode, 0, 9);
     /* start building bytecode*/
     operation.A = 1;
     operation.R = 0;
@@ -283,7 +284,7 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
         operation.srcAddressing = 0;
         operation.srcRegister = 0;
     }
-    if (args.numArgs == 1) {/* if we have only one arg, it's dest */
+    if (args.numArgs == 1) { /* if we have only one arg, it's dest */
         numArgs = 1;
         operation.destRegister = args.arg1Data.reg;
         operation.destAddressing = args.arg1Data.addressing;
@@ -440,7 +441,7 @@ int verifyArguments(Operation *op, CommandTokens *commandTokens) {
     }
 
     if (op->numArgs > 1) {
-        if (!matchesAddressing(op->destAddressing, commandTokens->arg2, &commandTokens->arg2Data)) {
+        if (matchesAddressing(op->destAddressing, commandTokens->arg2, &commandTokens->arg2Data) != 0) {
             return -1;
         }
     }
