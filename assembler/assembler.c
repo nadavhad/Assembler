@@ -64,17 +64,20 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  */
 
 int processAssemblyFile(char *fileName) {
+    /* if the first pass failed (regardless of input validity) , exit */
     if (firstPass(fileName) != 0) {
         return -1;
     }
-
+    /* if we had any input errors during first pass, print them and exit */
     if (numErrors() > 0) {
         flush();
         return -1;
     }
+    /* if the second pass failed (regardless of input validity) , exit */
     if (secondPass(fileName) != 0) {
         return -1;
     }
+    /* if we had any input errors during second pass, print them and exit */
     if (numErrors() > 0) {
         flush();
         return -1;
@@ -83,18 +86,27 @@ int processAssemblyFile(char *fileName) {
 }
 
 
-/*************************
+/* ************************
  *  First pass
  */
-
+/**
+ * Strips leading and trailing whitespace from a string.
+ * Copies the result to stripped
+ * @param rawStr the raw string
+ * @param stripped the adress to copy the stripped string to. Must be Non-NULL.
+ * @return 0 on success, -1 on failure.
+ */
 int stripWhiteSpaces(char *rawStr, char stripped[MAX_LINE_LENGTH]) {
     char *end;
+    /* empty output space */
     memset(stripped, 0, MAX_LINE_LENGTH);
+    /* advance start ptr until we reach a non-whitespace char */
     while (WHT(*rawStr) && !EOS(*rawStr) && !END(*rawStr)) {
         rawStr++;
     }
     strncpy(stripped, rawStr, MAX_LINE_LENGTH);
     end = stripped + strlen(stripped) - 1;
+    /* advance from end, place NUL char instead of each whitespace */
     while (WHT(*end)) {
         *end = 0;
         end--;
@@ -138,6 +150,7 @@ int firstPass(char *fileName) {
     DissectedLine dissectedLine;
     DissectedDirective dissectedDirective;
     file = fopen(fileName, "r");
+    /* if we can't open the file, no point in continuing */
     if (file == NULL) {
         perror(fileName);
         return -1;
@@ -146,25 +159,29 @@ int firstPass(char *fileName) {
     initializeFirstPass();
     while (1) {
         if (fgets(line, MAX_LINE_LENGTH, file) == NULL) {
-            /* We got to the end of a file. */
+            /* We got to the end of a file: close file, log IC and DC values */
             fclose(file);
             getState()->ICF = getState()->IC;
             getState()->DCF = getState()->DC;
             return 0;
         }
         incLineNumber();
+        /* if the label is invalid, we have nothing to do with the line */
         if (dissectLabel(line, &dissectedLine) == -1) {
             continue;
         }
 
         switch (dissectedLine.lineType) {
+            /* ignore empty line or comment */
             case LT_COMMENT:
                 break;
+            /* handle commands */
             case LT_COMMAND:
                 if (handleCmdLabelFirstPass(dissectedLine) == 0) {
                     handleCommand(dissectedLine);
                 }
                 break;
+            /* handle directives */
             case LT_DIRECTIVE:
                 if (getDirectiveType(dissectedLine, &dissectedDirective) == 0) {
                     if (handleDirectiveLabelFirstPass(dissectedLine, dissectedDirective) == 0) {
@@ -189,6 +206,7 @@ void initializeFirstPass() {
 /*------------------------
  *  Commands
  */
+
 int handleCmdLabelFirstPass(DissectedLine dissectedLine) {
     if (addSymbol(dissectedLine.label, getState()->IC, ST_CODE, FALSE) != 0) {
         return -1;
@@ -421,8 +439,8 @@ int tokenizeParams(char *remainder, CommandTokens *parsedCommand) {
     return 0;
 }
 
-
 int verifyArguments(Operation *op, CommandTokens *commandTokens) {
+    /* TODO: change to use ERROR_RET? */
     if (commandTokens->numArgs != op->numArgs) {
         char buf[200];
         sprintf(buf, "Wrong number of arguments for %s. Expected: %d Got: %d", op->name,
@@ -464,7 +482,6 @@ int matchesAddressing(int validAddressingArr[5], char *arg, Argument *argData) {
     ERROR_RET((_, "Wrong argument type: %d", argData->addressing));
 }
 
-
 int dissectCommand(char *commandStr, CommandTokens *parsedCommand) {
     /* 1. Check command structure (tokens, command, number of arguments)
      * 2. Split line to tokens: CommandTokens, argument1, argument2
@@ -480,7 +497,6 @@ int dissectCommand(char *commandStr, CommandTokens *parsedCommand) {
     return 0;
     /* TODO(nadav): Implement*/
 }
-
 
 /*----------------------
  *  Directives
@@ -512,7 +528,7 @@ int handleDirective(DissectedDirective dissectedDirective) {
             if (endquote == NULL) {
                 /* there is no second (closing) quote */
                 ERROR_RET((_, "Cannot find terminating \'\"\' in string"));
-            } else if (*(endquote+1) == 0) {
+            } else if (*(endquote + 1) == 0) {
                 /* if the last char is a quote, then the string ends with a quote */
                 /* TODO: log symbol with current DC */
                 while (*stripped != '\"') {
@@ -528,7 +544,7 @@ int handleDirective(DissectedDirective dissectedDirective) {
             } else {
                 /* if a " is before the end of the stripped string,
                  * then there are chars after it */
-                ERROR_RET((_, "Found terminating \'\"\' in the middle of a string: %i", *(endquote+1)));
+                ERROR_RET((_, "Found terminating \'\"\' in the middle of a string: %i", *(endquote + 1)));
             }
         } else {
             /* if the first character after stripping isn't ", then there either isn't one
