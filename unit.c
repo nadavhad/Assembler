@@ -1,8 +1,8 @@
-#include "symbolTable.h"
-#include "errorlog.h"
 #include <string.h>
 #include <stdio.h>
 #include "assembler.h"
+#include "errorlog.h"
+#include "symbolTable.h"
 
 int getDirectiveType(DissectedLine dissectedLine, DissectedDirective *directive);
 
@@ -194,7 +194,7 @@ int main() {
 
 
     }
-   return 0;
+    return 0;
 }
 
 int toBinary(int n, char binary[32]) {

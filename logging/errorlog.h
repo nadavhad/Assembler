@@ -5,22 +5,25 @@
 
 /**
  * Log an error
- * @param lineNumber
+ * @param lineNumber the line number in the assembly file
  * @param errorStr
  */
 void logError(int lineNumber, char *errorStr);
+
 /**
  * Print all logged errors to stderr
  */
 void flush();
+
 /**
  * Check how many errors were logged
- * @return
+ * @return the number of errors
  */
 int numErrors();
 
 /**
- * A macro representing an error clause/block based on an illegal argument
+ * A macro representing an error clause/block.
+ * Supports formatting.
  */
 #define ERROR_RET(__msg) {\
                 char _[200];\
