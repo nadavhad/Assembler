@@ -39,6 +39,9 @@ int main() {
             return 0;
         }
 
+        /**
+         * command tests
+         **/
         word = 0;
         memcpy(&word, &getState()->currentByteCode[ic], 3);
         toBinary(word, binary);
@@ -123,6 +126,71 @@ int main() {
         memcpy(&word, &getState()->currentByteCode[ic], 3);
         toBinary(word, binary);
         expect("word[15]", binary, "00000000000000000000000000000100");/*TODO: will only work in second pass*/
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[16]", binary, "00000000000101000000100000100100");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[17]", binary, "00000000000000000000000000000001");/*TODO: will only work in second pass*/
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[18]", binary, "00000000001001000001000000001100");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[19]", binary, "00000000000000000000000000000100");/*TODO: will only work in second pass*/
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[20]", binary, "00000000001111000000000000000100");
+
+
+        /**
+        * data tests
+        **/
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[21]", binary, "00000000000000000000000001100001");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[22]", binary, "00000000000000000000000001100010");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[23]", binary, "00000000000000000000000001100011");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[24]", binary, "00000000000000000000000001100100");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[25]", binary, "00000000000000000000000000000000");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[26]", binary, "00000000000000000000000000000110");
+        ic += 3;
+        word = 0;
+        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        toBinary(word, binary);
+        expect("word[27]", binary, "00000000111111111111111111110111");
 
 
     }
