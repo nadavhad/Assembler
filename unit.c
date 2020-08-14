@@ -34,6 +34,7 @@ int main() {
 
     {
         int ic = 100;
+        int dc = 0;
         if (firstPass("unitTest.as") == -1) {
             flush();
             return 0;
@@ -156,41 +157,51 @@ int main() {
         /**
         * data tests
         **/
-        ic += 3;
+        dc = 0;
         word = 0;
-        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        memcpy(&word, &getState()->dataByteCode[dc], 3);
         toBinary(word, binary);
         expect("word[21]", binary, "00000000000000000000000001100001");
-        ic += 3;
+        dc += 3;
         word = 0;
-        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        memcpy(&word, &getState()->dataByteCode[dc], 3);
         toBinary(word, binary);
         expect("word[22]", binary, "00000000000000000000000001100010");
-        ic += 3;
+        dc += 3;
         word = 0;
-        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        memcpy(&word, &getState()->dataByteCode[dc], 3);
         toBinary(word, binary);
         expect("word[23]", binary, "00000000000000000000000001100011");
-        ic += 3;
+        dc += 3;
         word = 0;
-        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        memcpy(&word, &getState()->dataByteCode[dc], 3);
         toBinary(word, binary);
         expect("word[24]", binary, "00000000000000000000000001100100");
-        ic += 3;
+        dc += 3;
         word = 0;
-        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        memcpy(&word, &getState()->dataByteCode[dc], 3);
         toBinary(word, binary);
         expect("word[25]", binary, "00000000000000000000000000000000");
-        ic += 3;
+        dc += 3;
         word = 0;
-        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        memcpy(&word, &getState()->dataByteCode[dc], 3);
         toBinary(word, binary);
         expect("word[26]", binary, "00000000000000000000000000000110");
-        ic += 3;
+        dc += 3;
         word = 0;
-        memcpy(&word, &getState()->currentByteCode[ic], 3);
+        memcpy(&word, &getState()->dataByteCode[dc], 3);
         toBinary(word, binary);
         expect("word[27]", binary, "00000000111111111111111111110111");
+        dc += 3;
+        word = 0;
+        memcpy(&word, &getState()->dataByteCode[dc], 3);
+        toBinary(word, binary);
+        expect("word[28]", binary, "00000000111111111111111110011100");
+        dc += 3;
+        word = 0;
+        memcpy(&word, &getState()->dataByteCode[dc], 3);
+        toBinary(word, binary);
+        expect("word[29]", binary, "00000000000000000000000000011111");
 
 
     }

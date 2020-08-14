@@ -165,6 +165,9 @@ int firstPass(char *fileName) {
             getState()->DCF = getState()->DC;
             return 0;
         }
+        if(strlen(line) > MAX_LINE_LENGTH){
+            ERROR_RET((_,"Line is too long"));
+        }
         incLineNumber();
         /* if the label is invalid, we have nothing to do with the line */
         if (dissectLabel(line, &dissectedLine) == -1) {
@@ -175,13 +178,13 @@ int firstPass(char *fileName) {
             /* ignore empty line or comment */
             case LT_COMMENT:
                 break;
-            /* handle commands */
+                /* handle commands */
             case LT_COMMAND:
                 if (handleCmdLabelFirstPass(dissectedLine) == 0) {
                     handleCommand(dissectedLine);
                 }
                 break;
-            /* handle directives */
+                /* handle directives */
             case LT_DIRECTIVE:
                 if (getDirectiveType(dissectedLine, &dissectedDirective) == 0) {
                     if (handleDirectiveLabelFirstPass(dissectedLine, dissectedDirective) == 0) {
@@ -523,47 +526,51 @@ int handleDirective(DissectedDirective dissectedDirective) {
         char strippedBuf[MAX_LINE_LENGTH];
         char *stripped = strippedBuf;
         stripWhiteSpaces(dissectedDirective.directiveArgs, stripped);
-        if (stripped[0] == '\"') {
-            char *endquote = strchr((stripped + 1), '\"');
-            if (endquote == NULL) {
-                /* there is no second (closing) quote */
-                ERROR_RET((_, "Cannot find terminating \'\"\' in string"));
-            } else if (*(endquote + 1) == 0) {
-                /* if the last char is a quote, then the string ends with a quote */
-                /* TODO: log symbol with current DC */
-                while (*stripped != '\"') {
-                    /* until we reach the end quote */
-                    memset(&(getState()->dataByteCode[getState()->DC]), *endquote, sizeof(char));
-                    getState()->DC++;
-                    stripped++;
-                }
-                /* add terminating zero */
-                memset(&(getState()->dataByteCode[getState()->DC]), 0, sizeof(char));
-                getState()->DC++;
-                return 0;
-            } else {
-                /* if a " is before the end of the stripped string,
-                 * then there are chars after it */
-                ERROR_RET((_, "Found terminating \'\"\' in the middle of a string: %i", *(endquote + 1)));
-            }
-        } else {
+        if (stripped[0] != '\"') {
             /* if the first character after stripping isn't ", then there either isn't one
-            * or there are chars before it. */
+             * or there are chars before it. */
             ERROR_RET((_, "Cannot find starting \'\"\'"));
         }
+        if (stripped[strlen(stripped) - 1] != '\"') {
+            /* if the last character after stripping isn't ", this is an error. */
+            ERROR_RET((_, "Cannot find closing \'\"\'"));
+        }
+
+        /* TODO: log symbol with current DC */
+        stripped++; /* skip the first quote */
+        while (*stripped != '\"') {
+            /* until we reach the end quote */
+            /* TODO: Wrap in a function */
+            memset(&(getState()->dataByteCode[3 * getState()->DC]), 0, 3);
+            getState()->dataByteCode[3 * getState()->DC] = *stripped;
+            getState()->DC++;
+            stripped++;
+        }
+        /* add terminating zero */
+        /* TODO: Wrap in a function */
+        memset(&(getState()->dataByteCode[3 * getState()->DC]), 0, 3);
+        getState()->DC++;
+        return 0;
     }
 
     if (dissectedDirective.type == DT_DATA) {
         char strippedBuf[MAX_LINE_LENGTH];
         char *stripped = strippedBuf;
+        int number;
         stripWhiteSpaces(dissectedDirective.directiveArgs, stripped);
         while (stripped[0] != 0) {
-            char *iterator = stripped;
-            strtol(stripped, &iterator, 10);
-            if (iterator == stripped) {
-                ERROR_RET((_, "Entries in \".data\" must be numbers"));
+            char iteratorBuf[MAX_LINE_LENGTH];
+            char *iterator = iteratorBuf;
+            strcpy(iteratorBuf, stripped);
+            number = strtol(iterator, &iterator, 10);
+            if (iterator == iteratorBuf) {
+                ERROR_RET((_, "Entries in \".data\" must be integer numbers"));
             }
-            stripWhiteSpaces(iterator, stripped);/* TODO: fix whitespace stripping */
+            /* TODO: Wrap in a function */
+            memset(&(getState()->dataByteCode[3 * getState()->DC]), number < 0 ? 0xFF : 0, 3);
+            getState()->dataByteCode[3 * getState()->DC] = number;
+            getState()->DC++;
+            stripWhiteSpaces(iterator, stripped);
             if (stripped[0] == ',') {
                 stripped++;
                 continue;
@@ -578,7 +585,7 @@ int handleDirective(DissectedDirective dissectedDirective) {
         /* empty .data : warning? */
         return 0;
     }
-    /* invalid DirectiveType */
+/* invalid DirectiveType */
     ERROR_RET((_, "Unexpected value: "));
 
 }
