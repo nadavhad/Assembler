@@ -59,8 +59,8 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  * N d 12. Save ICF, DCF
  *
  * Phase 2
- * Y   1. Write externUsageTable
- * Y       Make sure to free wherever other lists are freed.
+ * Y d 1. Write externUsageTable
+ * Y d    Make sure to free wherever other lists are freed.
  * N   2. Write second pass skeleton
  * N d       (reset dc[0], ic [100])
  * N d       for each line

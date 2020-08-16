@@ -12,7 +12,6 @@ typedef struct {
     enum bool isEntry;
 } SymbolData;
 
-
 int addSymbol(char name[MAX_LABEL_LENGTH], int value, SymbolType type, enum bool isEntry);
 
 int lookUp(char name[MAX_LABEL_LENGTH], SymbolData *symbolData);

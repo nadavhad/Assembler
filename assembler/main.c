@@ -1,7 +1,8 @@
+#include <string.h>
+#include "../logging/errorlog.h"
 #include "assembler.h"
 #include "symbolTable.h"
-#include "../logging/errorlog.h"
-#include <string.h>
+#include "externusage.h"
 
 int main(int argc, char **argv) {
     int i = 0;
@@ -10,6 +11,7 @@ int main(int argc, char **argv) {
         strcpy(buf, argv[i]);
         strcat(buf,".as");
         processAssemblyFile(argv[i]);
+        clearExternUsagesTable();
         clearSymbolTable();
         clearErrorLog();
     }
