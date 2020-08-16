@@ -75,9 +75,9 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  * N d           verifyArguments
  * N ?           encodeCommandPass1
  * N             for external symbols - add to external usage table
- * Y              implement for buildDataByte
- * Y                 AT_DIRECT
- * Y                 AT_RELATIVE
+ * Y d             implement for buildDataByte
+ * Y d                AT_DIRECT
+ * Y d                AT_RELATIVE
  * N             addCommand
  * X   3. Create output files
  *         code
@@ -263,8 +263,7 @@ int handleCommand(DissectedLine dissectedLine) {
  * Returns 2 if an argument doesn't need a data byte, 0 on success, and -1 on failure.
  */
 int buildDataByte(Argument arg, EncodedArg *databyte) {
-    enum bool isExternal = TRUE; /* TODO: Set isExternal to something real */
-    databyte->data = (arg.addressing == AT_IMMEDIATE) ? arg.value.scalar : 0;
+    databyte->data = (arg.addressing == AT_IMMEDIATE) ? arg.value.scalar : 0;/*TODO: I think this should be removed */
     switch (arg.addressing) {
         case AT_IMMEDIATE:
             databyte->A = 1;
@@ -275,14 +274,33 @@ int buildDataByte(Argument arg, EncodedArg *databyte) {
         case AT_DIRECT:
             databyte->A = 0;
             /* internal: R; external: E */
-            /* TODO: add external check */
-            databyte->E = isExternal == TRUE ? 1 : 0;
-            databyte->R = isExternal == TRUE ? 0 : 1;
+            if (isSymbolTableComplete() == TRUE) {
+                SymbolData referenced;
+                if (lookUp(arg.value.symbol, &referenced) == -1) {
+                    ERROR_RET((_, "Cannot find label: %s", arg.value.symbol));
+                }
+                if (referenced.type == ST_EXTERNAL) {
+                    databyte->E = 1;
+                    databyte->R = 0;
+                    databyte->data = 0;
+                } else {
+                    databyte->E = 0;
+                    databyte->R = 1;
+                    databyte->data = referenced.value;
+                }
+            }
             break;
         case AT_RELATIVE:
             databyte->A = 1;
             databyte->E = 0;
             databyte->R = 0;
+            if (isSymbolTableComplete() == TRUE) {
+                SymbolData referenced;
+                if (lookUp(arg.value.symbol, &referenced) == -1) {
+                    ERROR_RET((_, "Cannot find label: %s", arg.value.symbol));
+                }
+                databyte->data = referenced.value - getState()->IC;
+            }
             break;
         case AT_REGISTER:
             return 2;
