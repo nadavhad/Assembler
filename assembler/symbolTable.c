@@ -4,6 +4,8 @@
 #include "symbolTable.h"
 #include "errorlog.h"
 #include "structs.h"
+#include "state.h"
+#include "../logging/errorlog.h"
 
 /*TODO: free all realocatable space, (also on Yotam's malloc) */
 
@@ -85,4 +87,25 @@ int updateSymbol(char name[MAX_LABEL_LENGTH], int value) {
     }
     iterator->data.value = value;
     return 0;
+}
+
+int incrementDataSymbolsOffset(int icf) {
+    struct Node *iterator = _head;
+    while (iterator != NULL) {
+        if (iterator->data.type == ST_DATA) {
+            iterator->data.value += icf;
+        }
+        iterator = iterator->next;
+    };
+    return 0;
+}
+
+void clearSymbolTable() {
+    struct Node *iterator = _head;
+    while (iterator != NULL) {
+        struct Node *next = iterator->next;
+        free(iterator);
+        iterator = next;
+    };
+    _head = NULL;
 }

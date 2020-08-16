@@ -3,7 +3,7 @@
 
 #include "structs.h"
 
-enum bool {TRUE, FALSE};
+enum bool {FALSE, TRUE};
 
 typedef struct {
     char name[MAX_LABEL_LENGTH];
@@ -17,8 +17,12 @@ int addSymbol(char name[MAX_LABEL_LENGTH], int value, SymbolType type, enum bool
 
 int lookUp(char name[MAX_LABEL_LENGTH], SymbolData *symbolData);
 
+
+
 int updateSymbol(char name[MAX_LABEL_LENGTH], int value);
 
+int incrementDataSymbolsOffset(int icf);
 
+void clearSymbolTable();
 
 #endif /*ASSEMBLER_SYMBOL_TABLE_H*/

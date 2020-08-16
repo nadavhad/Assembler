@@ -28,4 +28,15 @@ int getLineNumber();
  * (Advance to the next line in the assembly file)
  */
 void incLineNumber();
+
+/**
+ * Add a command and increment IC accortdingly.
+ */
+void addCommand(const char *encodedOpcode, int opcodeLen);
+
+/**
+ * Add a data word and increment DC accordingly
+ **/
+void addDataWord(int number);
+
 #endif /*SHAREDFOLDER_STATE_H*/

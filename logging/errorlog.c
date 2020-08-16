@@ -55,3 +55,13 @@ void flush() {
         node = node->next;
     }
 }
+
+void clearErrorLog() {
+    struct Node *iterator = _head;
+    while (iterator != NULL) {
+        struct Node *next = iterator->next;
+        free(iterator);
+        iterator = next;
+    };
+    _head = NULL;
+}

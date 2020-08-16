@@ -163,10 +163,11 @@ int firstPass(char *fileName) {
             fclose(file);
             getState()->ICF = getState()->IC;
             getState()->DCF = getState()->DC;
+            incrementDataSymbolsOffset(getState()->ICF);
             return 0;
         }
-        if(strlen(line) > MAX_LINE_LENGTH){
-            ERROR_RET((_,"Line is too long"));
+        if (strlen(line) > MAX_LINE_LENGTH) {
+            ERROR_RET((_, "Line is too long"));
         }
         incLineNumber();
         /* if the label is invalid, we have nothing to do with the line */
@@ -236,19 +237,8 @@ int handleCommand(DissectedLine dissectedLine) {
         return -1;
     }
 
-    memcpy(&(getState()->currentByteCode[getState()->IC]), encodedOpcode, opcodeLen);
-    getState()->IC += opcodeLen;
+    addCommand(encodedOpcode, opcodeLen);
 
-    /*
-     * TODO:
-     * 1. Look for the command in table
-     * 2. Verify number of arguments
-     * 3. Verify argument addressing (by command)
-     * 4. Compute command size (including arguments) = L
-     * 5. Build binary command+arguments code
-     * 6. Save IC, L with binary code
-     * 7. Increment IC accordingly
-     */
     return 0;
 }
 
@@ -342,15 +332,15 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
         }
     }
 
-    *opcodeLen = 3;
+    *opcodeLen = 1;
     memcpy(encodedOpcode, &operation, 3);
     if (numArgs > 0) {
         memcpy(encodedOpcode + 3, &arg[0], 3);
-        (*opcodeLen) += 3;
+        (*opcodeLen)++;
     }
     if (numArgs > 1) {
         memcpy(encodedOpcode + 6, &arg[1], 3);
-        (*opcodeLen) += 3;
+        (*opcodeLen)++;
     }
     return 0;
 }
@@ -540,16 +530,11 @@ int handleDirective(DissectedDirective dissectedDirective) {
         stripped++; /* skip the first quote */
         while (*stripped != '\"') {
             /* until we reach the end quote */
-            /* TODO: Wrap in a function */
-            memset(&(getState()->dataByteCode[3 * getState()->DC]), 0, 3);
-            getState()->dataByteCode[3 * getState()->DC] = *stripped;
-            getState()->DC++;
+            addDataWord(*stripped);
             stripped++;
         }
         /* add terminating zero */
-        /* TODO: Wrap in a function */
-        memset(&(getState()->dataByteCode[3 * getState()->DC]), 0, 3);
-        getState()->DC++;
+        addDataWord(0);
         return 0;
     }
 
@@ -566,10 +551,7 @@ int handleDirective(DissectedDirective dissectedDirective) {
             if (iterator == iteratorBuf) {
                 ERROR_RET((_, "Entries in \".data\" must be integer numbers"));
             }
-            /* TODO: Wrap in a function */
-            memset(&(getState()->dataByteCode[3 * getState()->DC]), number < 0 ? 0xFF : 0, 3);
-            getState()->dataByteCode[3 * getState()->DC] = number;
-            getState()->DC++;
+            addDataWord(number);
             stripWhiteSpaces(iterator, stripped);
             if (stripped[0] == ',') {
                 stripped++;

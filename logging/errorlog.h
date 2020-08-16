@@ -21,6 +21,8 @@ void flush();
  */
 int numErrors();
 
+void clearErrorLog();
+
 /**
  * A macro representing an error clause/block.
  * Supports formatting.

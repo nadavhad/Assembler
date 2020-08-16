@@ -25,3 +25,14 @@ int getLineNumber() {
 void incLineNumber() {
     getState()->lineNumber++;
 }
+
+void addCommand(const char *encodedOpcode, int opcodeLen) {
+    memcpy(&(getState()->currentByteCode[getState()->IC*3]), encodedOpcode, opcodeLen*3);
+    getState()->IC += opcodeLen;
+}
+
+void addDataWord(int number) {
+    memset(&(getState()->dataByteCode[3 * getState()->DC]), number < 0 ? 0xFF : 0, 3);
+    getState()->dataByteCode[3 * getState()->DC] = number;
+    getState()->DC++;
+}
