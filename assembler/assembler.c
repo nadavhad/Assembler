@@ -7,11 +7,13 @@
 #include "../logging/errorlog.h"
 #include "symbolTable.h"
 #include "macros.h"
+#include "externusage.h"
 
 
 int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcode[9], int *opcodeLen);
 
 /**
+ * TODO: make sure 2's complement is not machine depepndent x
  * ASK:
  *    Can we use a contiguous array for data as well as code?
  *    Are .data numbers limited to char size? if so - what is the range? [-254, 255]/[-127, 128]/else
@@ -73,12 +75,12 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  * N d           dissectCommand
  * N d           findOperation
  * N d           verifyArguments
- * N ?           encodeCommandPass1
- * N             for external symbols - add to external usage table
+ * N d           encodeCommand
+ * N d           addCommand
+ * N d           for external symbols - add to external usage table
  * Y d             implement for buildDataByte
  * Y d                AT_DIRECT
  * Y d                AT_RELATIVE
- * N             addCommand
  * X   3. Create output files
  *         code
  *         entry
@@ -263,7 +265,10 @@ int handleCommand(DissectedLine dissectedLine) {
  * Returns 2 if an argument doesn't need a data byte, 0 on success, and -1 on failure.
  */
 int buildDataByte(Argument arg, EncodedArg *databyte) {
-    databyte->data = (arg.addressing == AT_IMMEDIATE) ? arg.value.scalar : 0;/*TODO: I think this should be removed */
+    SymbolData symbolData;
+    if (!isSymbolTableComplete()) {
+        databyte->data = (arg.addressing == AT_IMMEDIATE) ? arg.value.scalar : 0;
+    }
     switch (arg.addressing) {
         case AT_IMMEDIATE:
             databyte->A = 1;
@@ -272,6 +277,14 @@ int buildDataByte(Argument arg, EncodedArg *databyte) {
             databyte->data = arg.value.scalar;
             break;
         case AT_DIRECT:
+            if (isSymbolTableComplete()) {
+                if (lookUp(arg.value.symbol, &symbolData) == -1) {
+                    return -1;
+                }
+                if (symbolData.type == ST_EXTERNAL) {
+                    addUsage(symbolData.name, getState()->IC);
+                }
+            }
             databyte->A = 0;
             /* internal: R; external: E */
             if (isSymbolTableComplete() == TRUE) {
@@ -291,6 +304,14 @@ int buildDataByte(Argument arg, EncodedArg *databyte) {
             }
             break;
         case AT_RELATIVE:
+            if (isSymbolTableComplete()) {
+                if (lookUp(arg.value.symbol, &symbolData) == -1) {
+                    return -1;
+                }
+                if (symbolData.type == ST_EXTERNAL) {
+                    ERROR_RET((_,"Symbol type does not match addressing type")) /*??????*/
+                }
+            }
             databyte->A = 1;
             databyte->E = 0;
             databyte->R = 0;
@@ -651,9 +672,7 @@ int secondPass(char *fileName) {
                 break;
                 /* handle commands */
             case LT_COMMAND:
-                if (handleCmdLabelFirstPass(dissectedLine) == 0) {
-                    handleCommand(dissectedLine);
-                }
+                handleCommand(dissectedLine);
                 break;
                 /* handle directives */
             case LT_DIRECTIVE:
