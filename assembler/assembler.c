@@ -62,19 +62,19 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  * Y   1. Write externUsageTable
  * Y       Make sure to free wherever other lists are freed.
  * N   2. Write second pass skeleton
- * N        (reset dc[0], ic [100])
- * N        for each line
- * N          skip .extern, .string, .data
- * N          handle .entry
- * N            add isEntry to symbol table
- * N          or
- * N          handle command
- * N            dissectLabel
- * N            dissectCommand
- * N            findOperation
- * N            verifyArguments
- * N            encodeCommandPass1
- * N              for external symbols - add to external usage table
+ * N d       (reset dc[0], ic [100])
+ * N d       for each line
+ * N d         skip .extern, .string, .data
+ * N d         handle .entry
+ * N d           add isEntry to symbol table
+ * N d         or
+ * N d         handle command
+ * N d           dissectLabel
+ * N d           dissectCommand
+ * N d           findOperation
+ * N d           verifyArguments
+ * N ?           encodeCommandPass1
+ * N             for external symbols - add to external usage table
  * Y              implement for buildDataByte
  * Y                 AT_DIRECT
  * Y                 AT_RELATIVE
@@ -120,7 +120,7 @@ int processAssemblyFile(char *fileName) {
  * Strips leading and trailing whitespace from a string.
  * Copies the result to stripped
  * @param rawStr the raw string
- * @param stripped the adress to copy the stripped string to. Must be Non-NULL.
+ * @param stripped the address to copy the stripped string to. Must be Non-NULL.
  * @return 0 on success, -1 on failure.
  */
 int stripWhiteSpaces(char *rawStr, char stripped[MAX_LINE_LENGTH]) {
@@ -183,7 +183,7 @@ int firstPass(char *fileName) {
         return -1;
     }
 
-    initializeFirstPass();
+    initializeState();
     while (1) {
         if (fgets(line, MAX_LINE_LENGTH, file) == NULL) {
             /* We got to the end of a file: close file, log IC and DC values */
@@ -194,7 +194,7 @@ int firstPass(char *fileName) {
             return 0;
         }
         if (strlen(line) > MAX_LINE_LENGTH) {
-            ERROR_RET((_, "Line is too long"));
+            ERROR_RET((_, "Line is too long"))
         }
         incLineNumber();
         /* if the label is invalid, we have nothing to do with the line */
@@ -222,10 +222,6 @@ int firstPass(char *fileName) {
                 break;
         }
     }
-}
-
-void initializeFirstPass() {
-    initializeState();
 }
 
 /*------------------------
@@ -516,7 +512,7 @@ int handleDirective(DissectedDirective dissectedDirective) {
         if (validateLabel(dissectedDirective.directiveArgs) != 0) {
             ERROR_RET((_, "%s requires a valid label. Got %s instead",
                     (dissectedDirective.type == DT_ENTRY) ? ENTRY : EXTERN,
-                    dissectedDirective.directiveArgs));
+                    dissectedDirective.directiveArgs))
         }
     }
     if (dissectedDirective.type == DT_ENTRY) {
@@ -609,7 +605,13 @@ int handleDirectiveLabelFirstPass(DissectedLine dissectedLine, DissectedDirectiv
 int secondPass(char *fileName) {
     FILE *file;
     char line[MAX_LINE_LENGTH];
+    DissectedLine dissectedLine;
+    DissectedDirective dissectedDirective;
+    SymbolData symbolData;
     file = fopen(fileName, "r");
+    getState()->lineNumber = 0;
+    getState()->IC = 100;
+    getState()->DC = 0;
     if (file == NULL) {
         perror("Could not open input file: ");
         return -1;
@@ -619,6 +621,35 @@ int secondPass(char *fileName) {
             /* We got to the end of a file. */
             fclose(file);
             return 0;
+        }
+        incLineNumber();
+        /* if the label is invalid, we have nothing to do with the line */
+        if (dissectLabel(line, &dissectedLine) == -1) {
+            continue;
+        }
+
+        switch (dissectedLine.lineType) {
+            /* ignore empty line or comment */
+            case LT_COMMENT:
+                break;
+                /* handle commands */
+            case LT_COMMAND:
+                if (handleCmdLabelFirstPass(dissectedLine) == 0) {
+                    handleCommand(dissectedLine);
+                }
+                break;
+                /* handle directives */
+            case LT_DIRECTIVE:
+                if (getDirectiveType(dissectedLine, &dissectedDirective) == -1) {
+                    return -1;
+                }
+                if (dissectedDirective.type != ENTRY) {
+                    return 0;
+                }
+                if (setEntrySymbol(dissectedDirective.directiveToken) == -1) {
+                    return -1;
+                }
+                break;
         }
     }
 }

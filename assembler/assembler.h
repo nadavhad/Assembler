@@ -17,8 +17,6 @@ int secondPass(char *fileName);
 
 int handleCmdLabelFirstPass(DissectedLine dissectedLine);
 
-void initializeFirstPass();
-
 int handleDirective(DissectedDirective dissectedDirective);
 
 int handleDirectiveLabelFirstPass(DissectedLine line, DissectedDirective dissectedDirective);

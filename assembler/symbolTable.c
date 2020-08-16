@@ -93,7 +93,7 @@ int incrementDataSymbolsOffset(int icf) {
             iterator->data.value += icf;
         }
         iterator = iterator->next;
-    };
+    }
     return 0;
 }
 
