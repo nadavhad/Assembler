@@ -10,16 +10,6 @@
 
 int validateLabel(const char *label);
 
-unsigned int getJumpDistance(const char *string) {
-    /*TODO*/
-    return 0;
-}
-
-unsigned int getAddress(const char *arg) {
-    /*TODO*/
-    return 0;
-}
-
 int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
     char *endptr;
     argument->addressing = AT_UNSET;
@@ -98,7 +88,6 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
     strcpy(dissectedLine->command, accumulator);
     if (dissectedLine->command[0] == '.') {
         dissectedLine->lineType = LT_DIRECTIVE;
-        /* TODO: handle directives*/
     } else {
         dissectedLine->lineType = LT_COMMAND;
     }
@@ -136,7 +125,7 @@ static char directives[4][7] = {
 int validateLabel(const char *label) {
     int i;
     /*
-     * Demands:
+     * Requirements:
      * 1. label[0] is alphabetic
      * 2. len(label) <= 31
      * 3. unique

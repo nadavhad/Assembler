@@ -7,8 +7,6 @@
 #include "state.h"
 #include "../logging/errorlog.h"
 
-/*TODO: free all realocatable space, (also on Yotam's malloc) */
-
 struct Node {
     SymbolData data;
     struct Node *next;
@@ -78,14 +76,13 @@ int lookUp(char name[MAX_LABEL_LENGTH], SymbolData *symbolData) {
     return 0;
 }
 
-int updateSymbol(char name[MAX_LABEL_LENGTH], int value) {
+int setEntrySymbol(char *label) {
     struct Node *lastNode;
-    struct Node *iterator = lookUpNode(name, &lastNode);
+    struct Node *iterator = lookUpNode(label, &lastNode);
     if (iterator == NULL) {
-        logError(getLineNumber(), "Label not found.");
-        return -1;
+        ERROR_RET((_, "Label not found: %s", label));
     }
-    iterator->data.value = value;
+    iterator->data.isEntry = TRUE;
     return 0;
 }
 
@@ -108,4 +105,8 @@ void clearSymbolTable() {
         iterator = next;
     };
     _head = NULL;
+}
+
+enum bool isSymbolTableComplete() {
+    return (getState()->ICF >= 0) || (getState()->DCF >= 0);
 }

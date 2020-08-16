@@ -17,9 +17,9 @@ int addSymbol(char name[MAX_LABEL_LENGTH], int value, SymbolType type, enum bool
 
 int lookUp(char name[MAX_LABEL_LENGTH], SymbolData *symbolData);
 
+int setEntrySymbol(char *label);
 
-
-int updateSymbol(char name[MAX_LABEL_LENGTH], int value);
+enum bool isSymbolTableComplete();
 
 int incrementDataSymbolsOffset(int icf);
 

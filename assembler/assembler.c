@@ -34,7 +34,7 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  * N d 5. Update symbol table
  * N d 6. Update code skeleton
  * N d 7. Update state (IC)
- *     8. Handle directives
+ *   d 8. Handle directives
  * N d   9. Check directive type
  * N d  10. For .entry, extern
  * N d     10.1 Parse line
@@ -43,8 +43,7 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  * N d          Validate no label BEFORE
  * N d     10.4. For .extern - Add to symbol table (value 0, as extern) - if symbol already exists (only as an extern(?)) it's OK. Do nothing.
  * N d          Validate no label BEFORE
- *     11. .data, .string
- * Y       Write readNumber() to read positive/negative numbers (Can also use strtol)
+ *   d 11. .data, .string
  * Y d    Later use that in IMMEDIATE addressing as well
  * Y d    11.1 Add data array to state
  * Y d    11.2 .data - parse data (comma separated numbers), add to Data array, increment DC by data size
@@ -57,9 +56,37 @@ int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcod
  *   d         Make sure that starts and ends with "
  *   d         Remove quotes
  *   d         Make sure no quotes in the string
- * N d X. Save ICF, DCF
- * N    X Write tests (for stage 1)
- *     X. Free lists (error log, symbol table, etc.)
+ * N d 12. Save ICF, DCF
+ *
+ * Phase 2
+ * Y   1. Write externUsageTable
+ * Y       Make sure to free wherever other lists are freed.
+ * N   2. Write second pass skeleton
+ * N        (reset dc[0], ic [100])
+ * N        for each line
+ * N          skip .extern, .string, .data
+ * N          handle .entry
+ * N            add isEntry to symbol table
+ * N          or
+ * N          handle command
+ * N            dissectLabel
+ * N            dissectCommand
+ * N            findOperation
+ * N            verifyArguments
+ * N            encodeCommandPass1
+ * N              for external symbols - add to external usage table
+ * Y              implement for buildDataByte
+ * Y                 AT_DIRECT
+ * Y                 AT_RELATIVE
+ * N             addCommand
+ * X   3. Create output files
+ *         code
+ *         entry
+ *         externals
+ *
+ * N d  X Write tests (for stage 1)
+ * X   X Write tests (for stage 2)
+ *   d  X. Free lists (error log, symbol table, etc.)
  *     X. Document
  */
 
@@ -195,12 +222,6 @@ int firstPass(char *fileName) {
                 break;
         }
     }
-
-    /*TODO:
-     * 1. If found errors: print and stop
-     * 2. Store ICF, DCF
-     * 3. Update data labels in symbol table
-     * */
 }
 
 void initializeFirstPass() {
@@ -433,13 +454,9 @@ int tokenizeParams(char *remainder, CommandTokens *parsedCommand) {
 }
 
 int verifyArguments(Operation *op, CommandTokens *commandTokens) {
-    /* TODO: change to use ERROR_RET? */
     if (commandTokens->numArgs != op->numArgs) {
-        char buf[200];
-        sprintf(buf, "Wrong number of arguments for %s. Expected: %d Got: %d", op->name,
-                op->numArgs, commandTokens->numArgs);
-        logError(getLineNumber(), buf);
-        return -1;
+        ERROR_RET((_, "Wrong number of arguments for %s. Expected: %d Got: %d",
+                op->name, op->numArgs, commandTokens->numArgs));
     }
 
     if (op->numArgs > 0) {
@@ -488,7 +505,6 @@ int dissectCommand(char *commandStr, CommandTokens *parsedCommand) {
         return -1;
     }
     return 0;
-    /* TODO(nadav): Implement*/
 }
 
 /*----------------------
@@ -511,7 +527,6 @@ int handleDirective(DissectedDirective dissectedDirective) {
         return 0;
     }
 
-    /* TODO(yotam): Implement .data, .string*/
     if (dissectedDirective.type == DT_STRING) {
         char strippedBuf[MAX_LINE_LENGTH];
         char *stripped = strippedBuf;
@@ -526,7 +541,6 @@ int handleDirective(DissectedDirective dissectedDirective) {
             ERROR_RET((_, "Cannot find closing \'\"\'"));
         }
 
-        /* TODO: log symbol with current DC */
         stripped++; /* skip the first quote */
         while (*stripped != '\"') {
             /* until we reach the end quote */
@@ -593,7 +607,6 @@ int handleDirectiveLabelFirstPass(DissectedLine dissectedLine, DissectedDirectiv
  *  Second pass
  */
 int secondPass(char *fileName) {
-    /* TODO(nadav): Open file*/
     FILE *file;
     char line[MAX_LINE_LENGTH];
     file = fopen(fileName, "r");
