@@ -1,5 +1,5 @@
-SRCS = logging/errorlog.c assembler/assembler.c assembler/state.c assembler/dissector.c assembler/symbolTable.c
-HDRS = assembler/macros.h assembler/structs.h assembler/assembler.h assembler/constants.h assembler/parsing.h assembler/state.h assembler/symbolTable.h
+SRCS = logging/errorlog.c assembler/assembler.c assembler/state.c assembler/dissector.c assembler/symbolTable.c assembler/externusage.c
+HDRS = assembler/macros.h assembler/structs.h assembler/assembler.h assembler/constants.h assembler/parsing.h assembler/state.h assembler/symbolTable.h assembler/externusage.h
 INCLUDE_PATH =  -Ilogging -Iassembler
 
 out/assembler.out: ${SRCS} ${HDRS}
