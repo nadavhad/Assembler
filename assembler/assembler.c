@@ -607,7 +607,6 @@ int secondPass(char *fileName) {
     char line[MAX_LINE_LENGTH];
     DissectedLine dissectedLine;
     DissectedDirective dissectedDirective;
-    SymbolData symbolData;
     file = fopen(fileName, "r");
     getState()->lineNumber = 0;
     getState()->IC = 100;
@@ -643,7 +642,7 @@ int secondPass(char *fileName) {
                 if (getDirectiveType(dissectedLine, &dissectedDirective) == -1) {
                     return -1;
                 }
-                if (dissectedDirective.type != ENTRY) {
+                if (dissectedDirective.type != DT_ENTRY) {
                     return 0;
                 }
                 if (setEntrySymbol(dissectedDirective.directiveToken) == -1) {
