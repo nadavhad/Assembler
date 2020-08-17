@@ -24,4 +24,7 @@ int incrementDataSymbolsOffset(int icf);
 
 void clearSymbolTable();
 
+int startSymbolTableIteration(void **iterator, SymbolData *data);
+int getSymbolTableNext(void **iterator, SymbolData *data);
+
 #endif /*ASSEMBLER_SYMBOL_TABLE_H*/

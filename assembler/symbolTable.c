@@ -110,3 +110,18 @@ void clearSymbolTable() {
 enum bool isSymbolTableComplete() {
     return (getState()->ICF >= 0) || (getState()->DCF >= 0);
 }
+
+int startSymbolTableIteration(void **iterator, SymbolData *data) {
+    *iterator = _head;
+    if (*iterator != NULL) {
+        memcpy(data, &((struct Node *) *iterator)->data, sizeof(SymbolData));
+    }
+}
+
+int getSymbolTableNext(void **iterator, SymbolData *data) {
+    *iterator = ((struct Node *) *iterator)->next;
+    if (*iterator != NULL) {
+        memcpy(data, &((struct Node *) *iterator)->data, sizeof(SymbolData));
+    }
+}
+

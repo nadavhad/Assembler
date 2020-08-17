@@ -1,9 +1,9 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "../logging/errorlog.h"
 #include "outfile.h"
 #include "state.h"
+#include "symbolTable.h"
+#include <errorlog.h>
 
 static int strchrreplace(char *str, char replaced, char replacement);
 
@@ -50,5 +50,34 @@ static int strchrreplace(char *str, char replaced, char replacement) {
 
 static int writeLine(FILE *outfile, int num, int data) {
     fprintf(outfile, "%07d %06x\n", num, data);
+    return 0;
+}
+
+int createEntryFile(char *fileName) {
+    FILE* file;
+    void *iterator;
+    SymbolData symbolData;
+    char buf[MAX_FILE_NAME];
+    startSymbolTableIteration(&iterator, &symbolData);
+    if(iterator != NULL){
+        return 0;
+    }
+    strcpy(buf, fileName);
+    strcat(buf,".ent");
+    file = fopen(buf , "w+");
+    if(file == NULL){
+        ERROR_RET((_,"could not create output file"))
+    }
+    while (iterator != NULL) {
+        if (symbolData.isEntry == TRUE) {
+            int address = symbolData.value;
+            if (symbolData.type==ST_DATA) {
+                address += getState()->ICF;
+            }
+            fprintf(file, "%s %07d", symbolData.name, address);
+        }
+        getSymbolTableNext(&iterator, &symbolData);
+    }
+    fclose(file);
     return 0;
 }

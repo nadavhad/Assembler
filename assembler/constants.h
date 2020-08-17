@@ -2,7 +2,7 @@
 #define ASSEMBLER_CONSTANTS_H
 
 /* Maximum length of a line from the input */
-#define MAX_LINE_LENGTH 80
+#define MAX_LINE_LENGTH 82
 /* Maximum command length (actually < 4) */
 #define MAX_CMD_LENGTH 5
 /* Maximum length of a label (in characters) */
@@ -11,5 +11,7 @@
 #define MAX_PARAMS 2
 /* Maximum amount of tokens from any line*/
 #define MAX_TOKENS 4
+
+#define MAX_FILE_NAME 100
 
 #endif /*ASSEMBLER_CONSTANTS_H*/
