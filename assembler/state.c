@@ -31,8 +31,8 @@ void addCommand(const char *encodedOpcode, int opcodeLen) {
     getState()->IC += opcodeLen;
 }
 
-void addDataWord(int number) {
+void addDataWord(long number) {
     memset(&(getState()->dataByteCode[3 * getState()->DC]), number < 0 ? 0xFF : 0, 3);
-    getState()->dataByteCode[3 * getState()->DC] = number;
+    *((long*)&getState()->dataByteCode[3 * getState()->DC]) = number;
     getState()->DC++;
 }

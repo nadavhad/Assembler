@@ -12,6 +12,8 @@
 
 int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, int *opcodeLen);
 
+int writeOutputFiles();
+
 /**
  * TODO: make sure 2's complement is not machine depepndent x
  * ASK:
@@ -63,7 +65,7 @@ int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, i
  * Phase 2
  * Y d 1. Write externUsageTable
  * Y d    Make sure to free wherever other lists are freed.
- * N   2. Write second pass skeleton
+ * N d 2. Write second pass skeleton
  * N d       (reset dc[0], ic [100])
  * N d       for each line
  * N d         skip .extern, .string, .data
@@ -82,14 +84,15 @@ int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, i
  * Y d                AT_DIRECT
  * Y d                AT_RELATIVE
  * X   3. Create output files
- *         code
- *         entry
- *         externals
+ * Y       code
+ * N       entry
+ * N       externals
  *
- * N d  X Write tests (for stage 1)
- * X   X Write tests (for stage 2)
+ * N d X Write tests (for stage 1)
+ * Y   X Write tests (for stage 2)
  *   d  X. Free lists (error log, symbol table, etc.)
- *     X. Document
+ *
+ *     X. Document!!!!!!
  */
 
 int processAssemblyFile(char *fileName) {
@@ -111,10 +114,14 @@ int processAssemblyFile(char *fileName) {
         flush();
         return -1;
     }
+
+    /* Write output files */
+    if (writeOutputFiles() != 0) {
+        flush();
+        return -1;
+    }
     return 0;
 }
-
-
 /* ************************
  *  First pass
  */
@@ -175,7 +182,7 @@ int getDirectiveType(DissectedLine dissectedLine, DissectedDirective *directive)
 
 int firstPass(char *fileName) {
     FILE *file;
-    char line[MAX_LINE_LENGTH];
+    char line[MAX_LINE_LENGTH + 5];
     DissectedLine dissectedLine;
     DissectedDirective dissectedDirective;
     file = fopen(fileName, "r");
@@ -187,7 +194,7 @@ int firstPass(char *fileName) {
 
     initializeState();
     while (1) {
-        if (fgets(line, MAX_LINE_LENGTH, file) == NULL) {
+        if (fgets(line, MAX_LINE_LENGTH + 5, file) == NULL) {
             /* We got to the end of a file: close file, log IC and DC values */
             fclose(file);
             getState()->ICF = getState()->IC;
@@ -578,7 +585,7 @@ int handleDirective(DissectedDirective dissectedDirective) {
     if (dissectedDirective.type == DT_DATA) {
         char strippedBuf[MAX_LINE_LENGTH];
         char *stripped = strippedBuf;
-        int number;
+        long number;
         stripWhiteSpaces(dissectedDirective.directiveArgs, stripped);
         while (stripped[0] != 0) {
             char iteratorBuf[MAX_LINE_LENGTH];
@@ -676,4 +683,12 @@ int secondPass(char *fileName) {
                 break;
         }
     }
+}
+
+/*************************
+ *  Write output
+ */
+int writeOutputFiles() {
+    /* TODO: Implement! */
+    return 0;
 }

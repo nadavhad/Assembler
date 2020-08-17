@@ -37,6 +37,6 @@ void addCommand(const char *encodedOpcode, int opcodeLen);
 /**
  * Add a data word and increment DC accordingly
  **/
-void addDataWord(int number);
+void addDataWord(long number);
 
 #endif /*SHAREDFOLDER_STATE_H*/

@@ -48,7 +48,7 @@ enum ArgumentPosition {
     AP_SRC = 1, AP_DEST = 2
 };
 typedef union {
-    int scalar;
+    long scalar;
     char symbol[10];
 } Data;
 
