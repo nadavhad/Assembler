@@ -36,6 +36,20 @@ void clearExternUsagesTable() {
         struct Node *next = iterator->next;
         free(iterator);
         iterator = next;
-    };
+    }
     _head = NULL;
+}
+
+int startExternUsageIteration(void **iterator, ExternUsage *data) {
+    *iterator = _head;
+    if (*iterator != NULL) {
+        memcpy(data, &((struct Node *) *iterator)->data, sizeof(ExternUsage));
+    }
+}
+
+int getExternUsageNext(void **iterator, ExternUsage *data) {
+    *iterator = ((struct Node *) *iterator)->next;
+    if (*iterator != NULL) {
+        memcpy(data, &((struct Node *) *iterator)->data, sizeof(ExternUsage));
+    }
 }

@@ -692,5 +692,7 @@ int secondPass(char *fileName) {
 int writeOutputFiles(char* basefilename) {
     /* TODO: Implement! */
     createCodeOutputFile(basefilename);
+    createEntryOutputFile(basefilename);
+    createExternalOutputFile(basefilename);
     return 0;
 }
