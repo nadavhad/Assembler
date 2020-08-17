@@ -167,17 +167,7 @@ void testFirstPass() {
         return;
     }
 
-    /* Print output file */
-    for (ic = 100; ic < getState()->ICF; ++ic) {
-        word = 0;
-        memcpy(&word, &getState()->currentByteCode[ic * 3], 3);
-        printf("%07d %06x\n", ic, word);
-    }
-    for (dc = 0; dc < getState()->DCF; ++dc) {
-        word = 0;
-        memcpy(&word, &getState()->dataByteCode[dc * 3], 3);
-        printf("%07d %06x\n", dc+getState()->ICF, word);
-    }
+
 
     /**
      * command tests

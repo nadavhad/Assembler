@@ -7,12 +7,13 @@
 #include "../logging/errorlog.h"
 #include "symbolTable.h"
 #include "macros.h"
+#include "outfile.h"
 #include "externusage.h"
 
 
 int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, int *opcodeLen);
 
-int writeOutputFiles();
+int writeOutputFiles(char*);
 
 /**
  * TODO: make sure 2's complement is not machine depepndent x
@@ -116,7 +117,7 @@ int processAssemblyFile(char *fileName) {
     }
 
     /* Write output files */
-    if (writeOutputFiles() != 0) {
+    if (writeOutputFiles(fileName) != 0) {
         flush();
         return -1;
     }
@@ -688,7 +689,8 @@ int secondPass(char *fileName) {
 /*************************
  *  Write output
  */
-int writeOutputFiles() {
+int writeOutputFiles(char* basefilename) {
     /* TODO: Implement! */
+    createCodeOutputFile(basefilename);
     return 0;
 }
