@@ -9,7 +9,7 @@
 #define EXTERN ".extern"
 
 
-int processAssemblyFile(char *string);
+int processAssemblyFile(char *basefileName);
 
 int firstPass(char *fileName);
 

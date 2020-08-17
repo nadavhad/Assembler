@@ -116,6 +116,7 @@ int startSymbolTableIteration(void **iterator, SymbolData *data) {
     if (*iterator != NULL) {
         memcpy(data, &((struct Node *) *iterator)->data, sizeof(SymbolData));
     }
+    return 0;
 }
 
 int getSymbolTableNext(void **iterator, SymbolData *data) {
@@ -123,5 +124,6 @@ int getSymbolTableNext(void **iterator, SymbolData *data) {
     if (*iterator != NULL) {
         memcpy(data, &((struct Node *) *iterator)->data, sizeof(SymbolData));
     }
+    return 0;
 }
 

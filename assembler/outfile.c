@@ -4,22 +4,25 @@
 #include "externusage.h"
 #include "state.h"
 #include "symbolTable.h"
+#include "../logging/errorlog.h"
 #include <errorlog.h>
 
 static int writeLine(FILE *, int, long);
+
+FILE *openOutFile(const char *basefilename, const char *extension, char *outFileName);
 
 int createCodeOutputFile(char *basefilename) {
     int dc, ic;
     long word;
     FILE *outfile;
     char icfStr[8];
-    strcat(basefilename, ".ob");
-    outfile = fopen(basefilename, "w+");
+    char outFileName[MAX_FILE_NAME];
+    outfile = openOutFile(basefilename, ".ob", outFileName);
     if (outfile == NULL) {
         ERROR_RET((_, "Failed to create .ob output file."))
     }
-    sprintf(icfStr, "%d", getState()->ICF);
-    fprintf(outfile, "%7s %d", icfStr, getState()->DCF);
+    sprintf(icfStr, "%d", getState()->ICF - 100);
+    fprintf(outfile, "%7s %d\n", icfStr, getState()->DCF);
 
     /* Print output file */
     for (ic = 100; ic < getState()->ICF; ++ic) {
@@ -36,13 +39,21 @@ int createCodeOutputFile(char *basefilename) {
     return 0;
 }
 
+FILE *openOutFile(const char *basefilename, const char *extension, char *outFileName) {
+    FILE *outfile;
+    strcpy(outFileName, basefilename);
+    strcat(outFileName, extension);
+    outfile = fopen(outFileName, "w+");
+    return outfile;
+}
+
 static int writeLine(FILE *outfile, int num, long data) {
-    fprintf(outfile, "%07d %06x\n", num, data);
+    fprintf(outfile, "%07d %06lx\n", num, data);
     return 0;
 }
 
 int createEntryOutputFile(char *fileName) {
-    FILE *file;
+    FILE *file = NULL;
     void *iterator;
     SymbolData symbolData;
     char buf[MAX_FILE_NAME];
@@ -50,23 +61,22 @@ int createEntryOutputFile(char *fileName) {
     if (iterator == NULL) {
         return 0;
     }
-    strcpy(buf, fileName);
-    strcat(buf, ".ent");
-    file = fopen(buf, "w+");
-    if (file == NULL) {
-        ERROR_RET((_, "could not create .ent output file"))
-    }
     while (iterator != NULL) {
         if (symbolData.isEntry == TRUE) {
             int address = symbolData.value;
-            if (symbolData.type==ST_DATA) {
-                address += getState()->ICF;
+            if (file == NULL) {
+                file = openOutFile(fileName, ".ent", buf);
+                if (file == NULL) {
+                    ERROR_RET((_, "could not create .ent output file"))
+                }
             }
             fprintf(file, "%s %07d\n", symbolData.name, address);
         }
         getSymbolTableNext(&iterator, &symbolData);
     }
-    fclose(file);
+    if (file != NULL) {
+        fclose(file);
+    }
     return 0;
 }
 
@@ -79,9 +89,7 @@ int createExternalOutputFile(char *fileName) {
     if (iterator == NULL) {
         return 0;
     }
-    strcpy(buf, fileName);
-    strcat(buf, ".ext");
-    file = fopen(buf, "w+");
+    file = openOutFile(fileName, ".ext", buf);
     if (file == NULL) {
         ERROR_RET((_, "could not create .ext output file"))
     }

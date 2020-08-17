@@ -22,7 +22,7 @@ int addUsage(char externLabel[MAX_LABEL_LENGTH], int usageAddress) {
         _head = initNode(externLabel, usageAddress);
     } else {
         struct Node *iter = _head;
-        while (iter->next == NULL) {
+        while (iter->next != NULL) {
             iter = iter->next;
         }
         iter->next = initNode(externLabel, usageAddress);
@@ -45,6 +45,7 @@ int startExternUsageIteration(void **iterator, ExternUsage *data) {
     if (*iterator != NULL) {
         memcpy(data, &((struct Node *) *iterator)->data, sizeof(ExternUsage));
     }
+    return 0;
 }
 
 int getExternUsageNext(void **iterator, ExternUsage *data) {
@@ -52,4 +53,5 @@ int getExternUsageNext(void **iterator, ExternUsage *data) {
     if (*iterator != NULL) {
         memcpy(data, &((struct Node *) *iterator)->data, sizeof(ExternUsage));
     }
+    return 0;
 }

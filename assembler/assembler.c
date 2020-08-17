@@ -96,9 +96,13 @@ int writeOutputFiles(char*);
  *     X. Document!!!!!!
  */
 
-int processAssemblyFile(char *fileName) {
+int processAssemblyFile(char *basefileName) {
+    char assemblyFileName[80];
+    strcpy(assemblyFileName, basefileName);
+    strcat(assemblyFileName, ".as");
+
     /* if the first pass failed (regardless of input validity) , exit */
-    if (firstPass(fileName) != 0) {
+    if (firstPass(assemblyFileName) != 0) {
         return -1;
     }
     /* if we had any input errors during first pass, print them and exit */
@@ -107,7 +111,7 @@ int processAssemblyFile(char *fileName) {
         return -1;
     }
     /* if the second pass failed (regardless of input validity) , exit */
-    if (secondPass(fileName) != 0) {
+    if (secondPass(assemblyFileName) != 0) {
         return -1;
     }
     /* if we had any input errors during second pass, print them and exit */
@@ -117,7 +121,7 @@ int processAssemblyFile(char *fileName) {
     }
 
     /* Write output files */
-    if (writeOutputFiles(fileName) != 0) {
+    if (writeOutputFiles(basefileName) != 0) {
         flush();
         return -1;
     }
@@ -272,7 +276,7 @@ int handleCommand(DissectedLine dissectedLine) {
 /**
  * Returns 2 if an argument doesn't need a data byte, 0 on success, and -1 on failure.
  */
-int buildDataByte(Argument arg, EncodedArg *databyte) {
+int buildDataByte(Argument arg, int databyteOffset, EncodedArg *databyte) {
     SymbolData symbolData;
     memset(databyte, 0, sizeof(*databyte));
     switch (arg.addressing) {
@@ -293,7 +297,7 @@ int buildDataByte(Argument arg, EncodedArg *databyte) {
             }
 
             if (symbolData.type == ST_EXTERNAL) {
-                addUsage(symbolData.name, getState()->IC);
+                addUsage(symbolData.name, getState()->IC+databyteOffset);
                 databyte->E = 1;
                 databyte->R = 0;
                 databyte->data = 0;
@@ -355,7 +359,7 @@ int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, i
         operation.destRegister = args.arg1Data.reg;
         operation.destAddressing = args.arg1Data.addressing;
 
-        retVal = buildDataByte(args.arg1Data, &arg[0]);
+        retVal = buildDataByte(args.arg1Data, 1, &arg[0]);
         if (retVal == -1) {
             return -1;
         } else if (retVal == 2) {
@@ -366,7 +370,7 @@ int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, i
         operation.srcRegister = args.arg1Data.reg;
         operation.srcAddressing = args.arg1Data.addressing;
 
-        retVal = buildDataByte(args.arg1Data, &arg[0]);
+        retVal = buildDataByte(args.arg1Data, 1, &arg[0]);
         if (retVal == -1) {
             return -1;
         } else if (retVal == 2) {
@@ -376,7 +380,7 @@ int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, i
         operation.destRegister = args.arg2Data.reg;
         operation.destAddressing = args.arg2Data.addressing;
 
-        retVal = buildDataByte(args.arg2Data, &arg[numArgs - 1]);
+        retVal = buildDataByte(args.arg2Data, numArgs, &arg[numArgs - 1]);
         if (retVal == -1) {
             return -1;
         } else if (retVal == 2) {
@@ -554,7 +558,7 @@ int handleDirective(DissectedDirective dissectedDirective) {
         return 0;
     }
     if (dissectedDirective.type == DT_EXTERN) {
-        addSymbol(dissectedDirective.directiveArgs, 0, dissectedDirective.type, FALSE);
+        addSymbol(dissectedDirective.directiveArgs, 0, ST_EXTERNAL, FALSE);
         return 0;
     }
 
@@ -621,7 +625,7 @@ int handleDirectiveLabelFirstPass(DissectedLine dissectedLine, DissectedDirectiv
     enum bool isEntry = FALSE;
     /* Any label before .entry/.extern is ignored. We issue a warning to the user. */
     if ((dissectedDirective.type == DT_ENTRY) || (dissectedDirective.type == DT_EXTERN)) {
-        if (strlen(dissectedLine.label) == 0) {
+        if (strlen(dissectedLine.label) > 0) {
             printf("%d: Warning: There is a label before %s - it will be ignored\n", getLineNumber(),
                    (dissectedDirective.type == DT_ENTRY) ? ".entry" : ".extern");
         }
@@ -673,13 +677,13 @@ int secondPass(char *fileName) {
                 /* handle directives */
             case LT_DIRECTIVE:
                 if (getDirectiveType(dissectedLine, &dissectedDirective) == -1) {
-                    return -1;
+                    break;
                 }
                 if (dissectedDirective.type != DT_ENTRY) {
-                    return 0;
+                    break;
                 }
-                if (setEntrySymbol(dissectedDirective.directiveToken) == -1) {
-                    return -1;
+                if (setEntrySymbol(dissectedDirective.directiveArgs) == -1) {
+                    break;
                 }
                 break;
         }
@@ -690,7 +694,6 @@ int secondPass(char *fileName) {
  *  Write output
  */
 int writeOutputFiles(char* basefilename) {
-    /* TODO: Implement! */
     createCodeOutputFile(basefilename);
     createEntryOutputFile(basefilename);
     createExternalOutputFile(basefilename);
