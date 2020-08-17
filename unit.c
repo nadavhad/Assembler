@@ -168,7 +168,7 @@ void testFirstPass() {
     word = 0;
     memcpy(&word, &getState()->currentByteCode[ic*3], 3);
     toBinary(word, binary);
-    expect("word[1]", binary, "00000000000000000000000000000001");/*TODO: will only work in second pass*/
+    expect("word[1]", binary, "00000000000000000000000000000000");/*TODO: will only work in second pass*/
     ic++;
     word = 0;
     memcpy(&word, &getState()->currentByteCode[ic*3], 3);
@@ -188,7 +188,7 @@ void testFirstPass() {
     word = 0;
     memcpy(&word, &getState()->currentByteCode[ic*3], 3);
     toBinary(word, binary);
-    expect("word[5]", binary, "00000000000000000000000000000001");/*TODO: will only work in second pass*/
+    expect("word[5]", binary, "00000000000000000000000000000000");/*TODO: will only work in second pass*/
     ic++;
     word = 0;
     memcpy(&word, &getState()->currentByteCode[ic*3], 3);
@@ -203,7 +203,7 @@ void testFirstPass() {
     word = 0;
     memcpy(&word, &getState()->currentByteCode[ic*3], 3);
     toBinary(word, binary);
-    expect("word[8]", binary, "00000000000000000000000000000001");/*TODO: will only work in second pass*/
+    expect("word[8]", binary, "00000000000000000000000000000000");/*TODO: will only work in second pass*/
     ic++;
     word = 0;
     memcpy(&word, &getState()->currentByteCode[ic*3], 3);
@@ -218,7 +218,7 @@ void testFirstPass() {
     word = 0;
     memcpy(&word, &getState()->currentByteCode[ic*3], 3);
     toBinary(word, binary);
-    expect("word[11]", binary, "00000000000000000000000000000001");/*TODO: will only work in second pass*/
+    expect("word[11]", binary, "00000000000000000000000000000000");/*TODO: will only work in second pass*/
     ic++;
     word = 0;
     memcpy(&word, &getState()->currentByteCode[ic*3], 3);
@@ -228,7 +228,7 @@ void testFirstPass() {
     word = 0;
     memcpy(&word, &getState()->currentByteCode[ic*3], 3);
     toBinary(word, binary);
-    expect("word[13]", binary, "00000000000000000000000000000001");/*TODO: will only work in second pass*/
+    expect("word[13]", binary, "00000000000000000000000000000000");/*TODO: will only work in second pass*/
     ic++;
     word = 0;
     memcpy(&word, &getState()->currentByteCode[ic*3], 3);
@@ -253,7 +253,7 @@ void testFirstPass() {
     word = 0;
     memcpy(&word, &getState()->currentByteCode[ic*3], 3);
     toBinary(word, binary);
-    expect("word[17]", binary, "00000000000000000000000000000001");/*TODO: will only work in second pass*/
+    expect("word[17]", binary, "00000000000000000000000000000000");/*TODO: will only work in second pass*/
     ic++;
     word = 0;
     memcpy(&word, &getState()->currentByteCode[ic*3], 3);

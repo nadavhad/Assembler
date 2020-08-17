@@ -10,7 +10,7 @@
 #include "externusage.h"
 
 
-int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcode[9], int *opcodeLen);
+int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, int *opcodeLen);
 
 /**
  * TODO: make sure 2's complement is not machine depepndent x
@@ -252,7 +252,7 @@ int handleCommand(DissectedLine dissectedLine) {
         return -1;
     }
 
-    if (encodeCommandPass1(&command, commandTokens, encodedOpcode, &opcodeLen) != 0) {
+    if (encodeCommand(&command, commandTokens, encodedOpcode, &opcodeLen) != 0) {
         return -1;
     }
 
@@ -266,9 +266,7 @@ int handleCommand(DissectedLine dissectedLine) {
  */
 int buildDataByte(Argument arg, EncodedArg *databyte) {
     SymbolData symbolData;
-    if (!isSymbolTableComplete()) {
-        databyte->data = (arg.addressing == AT_IMMEDIATE) ? arg.value.scalar : 0;
-    }
+    memset(databyte, 0, sizeof(*databyte));
     switch (arg.addressing) {
         case AT_IMMEDIATE:
             databyte->A = 1;
@@ -277,51 +275,41 @@ int buildDataByte(Argument arg, EncodedArg *databyte) {
             databyte->data = arg.value.scalar;
             break;
         case AT_DIRECT:
-            if (isSymbolTableComplete()) {
-                if (lookUp(arg.value.symbol, &symbolData) == -1) {
-                    return -1;
-                }
-                if (symbolData.type == ST_EXTERNAL) {
-                    addUsage(symbolData.name, getState()->IC);
-                }
-            }
             databyte->A = 0;
             /* internal: R; external: E */
-            if (isSymbolTableComplete() == TRUE) {
-                SymbolData referenced;
-                if (lookUp(arg.value.symbol, &referenced) == -1) {
-                    ERROR_RET((_, "Cannot find label: %s", arg.value.symbol));
-                }
-                if (referenced.type == ST_EXTERNAL) {
-                    databyte->E = 1;
-                    databyte->R = 0;
-                    databyte->data = 0;
-                } else {
-                    databyte->E = 0;
-                    databyte->R = 1;
-                    databyte->data = referenced.value;
-                }
+            if (isSymbolTableComplete() == FALSE) {
+                break;
+            }
+            if (lookUp(arg.value.symbol, &symbolData) == -1) {
+                ERROR_RET((_, "Cannot find label: %s", arg.value.symbol));
+            }
+
+            if (symbolData.type == ST_EXTERNAL) {
+                addUsage(symbolData.name, getState()->IC);
+                databyte->E = 1;
+                databyte->R = 0;
+                databyte->data = 0;
+            } else {
+                databyte->E = 0;
+                databyte->R = 1;
+                databyte->data = symbolData.value;
             }
             break;
         case AT_RELATIVE:
-            if (isSymbolTableComplete()) {
-                if (lookUp(arg.value.symbol, &symbolData) == -1) {
-                    return -1;
-                }
-                if (symbolData.type == ST_EXTERNAL) {
-                    ERROR_RET((_,"Symbol type does not match addressing type")) /*??????*/
-                }
-            }
             databyte->A = 1;
             databyte->E = 0;
             databyte->R = 0;
-            if (isSymbolTableComplete() == TRUE) {
-                SymbolData referenced;
-                if (lookUp(arg.value.symbol, &referenced) == -1) {
-                    ERROR_RET((_, "Cannot find label: %s", arg.value.symbol));
-                }
-                databyte->data = referenced.value - getState()->IC;
+            if (isSymbolTableComplete() == FALSE) {
+                break;
             }
+            if (lookUp(arg.value.symbol, &symbolData) == -1) {
+                ERROR_RET((_, "Cannot find label: %s", arg.value.symbol));
+            }
+            if (symbolData.type == ST_EXTERNAL) {
+                ERROR_RET((_, "External labels are not supported for relative addressing (%s)",
+                        arg.value.symbol));
+            }
+            databyte->data = symbolData.value - getState()->IC;
             break;
         case AT_REGISTER:
             return 2;
@@ -333,7 +321,7 @@ int buildDataByte(Argument arg, EncodedArg *databyte) {
     return 0;
 }
 
-int encodeCommandPass1(Operation *command, CommandTokens args, char encodedOpcode[9], int *opcodeLen) {
+int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, int *opcodeLen) {
     EncodedOperation operation;
     EncodedArg arg[2];
     int numArgs = 0;
@@ -647,13 +635,13 @@ int secondPass(char *fileName) {
     DissectedLine dissectedLine;
     DissectedDirective dissectedDirective;
     file = fopen(fileName, "r");
-    getState()->lineNumber = 0;
-    getState()->IC = 100;
-    getState()->DC = 0;
     if (file == NULL) {
         perror("Could not open input file: ");
         return -1;
     }
+    getState()->lineNumber = 0;
+    getState()->IC = 100;
+    getState()->DC = 0;
     while (1) {
         if (fgets(line, MAX_LINE_LENGTH, file) == NULL) {
             /* We got to the end of a file. */
