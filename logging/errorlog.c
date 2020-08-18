@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../assembler/structs.h"
 
 #define MAX_ERROR_LENGTH 200
 struct Node {
@@ -64,4 +65,27 @@ void clearErrorLog() {
         iterator = next;
     };
     _head = NULL;
+}
+
+char* addressingTypeStr(enum AddressingType addressingType) {
+    static char buf[10];
+    switch (addressingType) {
+        case AT_IMMEDIATE:
+            strcpy(buf, "IMMEDIATE");
+            break;
+        case AT_DIRECT:
+            strcpy(buf, "DIRECT");
+            break;
+        case AT_RELATIVE:
+            strcpy(buf, "RELATIVE");
+            break;
+        case AT_REGISTER:
+            strcpy(buf, "REGISTER");
+            break;
+        case AT_UNSET:
+            strcpy(buf, "UNSET");
+            break;
+
+    }
+    return buf;
 }

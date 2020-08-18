@@ -32,13 +32,13 @@ int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
         argument->addressing = AT_RELATIVE;
         strcpy(argument->value.symbol, &raw_arg[1]);
         if (validateLabel(argument->value.symbol) == -1) {
-            ERROR_RET((_, "Invalid label: %s", argument->value.symbol));
+            return -1;
         }
         return 0;
     }
 
     if (validateLabel(raw_arg) == -1) {
-        ERROR_RET((_, "Invalid label: %s", argument->value.symbol));
+        return -1;
     }
     argument->addressing = AT_DIRECT;
     strcpy(argument->value.symbol, raw_arg);
@@ -67,7 +67,7 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
     memset(accumulator, 0, sizeof(accumulator));
     while (!END(*iterator)) {
         /* accumulate until reaching end or colon, assign accumulator accordingly*/
-        if (*iterator == ':') {
+        if ((dissectedLine->label[0] == 0) && (*iterator == ':')) {
             /* if has a label, fill label field with accumulator and reset accumulator */
             strcpy(dissectedLine->label, accumulator);
             if (validateLabel(dissectedLine->label) == -1) {
@@ -124,6 +124,7 @@ static char directives[4][7] = {
 
 int validateLabel(const char *label) {
     int i;
+    char *iter;
     /*
      * Requirements:
      * 1. label[0] is alphabetic
@@ -133,6 +134,7 @@ int validateLabel(const char *label) {
      *  a. not r0..r7
      *  b. not command
      *  c. not directive
+     * 5. All characters are alphanumeric
      */
     if (!(isalpha(label[0]))) ERROR_RET((_, "Illegal label, labels must start with a letter. Label: %s", label));
 
@@ -156,6 +158,12 @@ int validateLabel(const char *label) {
         if (strcmp(label, directives[i]) == 0) ERROR_RET(
                 (_, "Illegal label, label cannot be a directive name. Label: %s",
                         label));
+    }
+
+    for (iter = (char *) label; *iter != 0; ++iter) {
+        if (!isalnum(*iter)) {
+            ERROR_RET((_, "Illegal label: %s", label));
+        }
     }
     return 0;
 }

@@ -103,6 +103,7 @@ int processAssemblyFile(char *basefileName) {
 
     /* if the first pass failed (regardless of input validity) , exit */
     if (firstPass(assemblyFileName) != 0) {
+        fprintf(stderr, "Error: firstPass Failed\n");
         return -1;
     }
     /* if we had any input errors during first pass, print them and exit */
@@ -112,6 +113,7 @@ int processAssemblyFile(char *basefileName) {
     }
     /* if the second pass failed (regardless of input validity) , exit */
     if (secondPass(assemblyFileName) != 0) {
+        fprintf(stderr, "Error: secondPass Failed\n");
         return -1;
     }
     /* if we had any input errors during second pass, print them and exit */
@@ -207,10 +209,13 @@ int firstPass(char *fileName) {
             incrementDataSymbolsOffset(getState()->ICF);
             return 0;
         }
-        if (strlen(line) > MAX_LINE_LENGTH) {
-            ERROR_RET((_, "Line is too long"))
-        }
         incLineNumber();
+        if (strlen(line) > MAX_LINE_LENGTH) {
+            /* Read everything up to the end of the line (or file) */
+            while (!EOL(line[strlen(line)-1]) && fgets(line, MAX_LINE_LENGTH + 5, file) != NULL);
+            logError(getLineNumber(), "Line is too long");
+            continue;
+        }
         /* if the label is invalid, we have nothing to do with the line */
         if (dissectLabel(line, &dissectedLine) == -1) {
             continue;
@@ -326,9 +331,7 @@ int buildDataByte(Argument arg, int databyteOffset, EncodedArg *databyte) {
         case AT_REGISTER:
             return 2;
         default:
-            logError(getLineNumber(), "Something terrible has happened!!!");
-            return -1;
-
+            ERROR_RET((_, "Illegal addressing type. Something terrible has happened!!!"));
     }
     return 0;
 }
@@ -524,7 +527,7 @@ int matchesAddressing(int validAddressingArr[5], char *arg, Argument *argData) {
             return 0;
         }
     }
-    ERROR_RET((_, "Wrong argument type: %d", argData->addressing));
+    ERROR_RET((_, "Invalid addressing type: %s (%s)", addressingTypeStr(argData->addressing), arg));
 }
 
 int dissectCommand(char *commandStr, CommandTokens *parsedCommand) {
@@ -549,9 +552,7 @@ int handleDirective(DissectedDirective dissectedDirective) {
     /* Handle .entry, .extern */
     if ((dissectedDirective.type == DT_ENTRY) || (dissectedDirective.type == DT_EXTERN)) {
         if (validateLabel(dissectedDirective.directiveArgs) != 0) {
-            ERROR_RET((_, "%s requires a valid label. Got %s instead",
-                    (dissectedDirective.type == DT_ENTRY) ? ENTRY : EXTERN,
-                    dissectedDirective.directiveArgs))
+            return -1;
         }
     }
     if (dissectedDirective.type == DT_ENTRY) {
@@ -598,19 +599,22 @@ int handleDirective(DissectedDirective dissectedDirective) {
             strcpy(iteratorBuf, stripped);
             number = strtol(iterator, &iterator, 10);
             if (iterator == iteratorBuf) {
-                ERROR_RET((_, "Entries in \".data\" must be integer numbers"));
+                ERROR_RET((_, "Entries in \".data\" must be comma separated integer numbers. Got <%s>", stripped));
             }
             addDataWord(number);
             stripWhiteSpaces(iterator, stripped);
             if (stripped[0] == ',') {
                 stripped++;
+                if (*stripped == 0) {
+                    ERROR_RET((_, "Missing data after comma."));
+                }
                 continue;
             } else if (stripped[0] == 0) {
                 /* finished data parsing */
                 return 0;
             } else {
                 /* error - expected end or ','. */
-                ERROR_RET((_, "Unexpected chars: "))
+                ERROR_RET((_, "Expected ',', got unexpected characters: <%s>", stripped))
             }
         }
         /* empty .data : warning? */

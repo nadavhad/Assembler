@@ -2,6 +2,7 @@
 #define ASSEMBLER_ERRORLOG_H
 
 #include "state.h"
+#include "structs.h"
 
 /**
  * Log an error
@@ -33,4 +34,6 @@ void clearErrorLog();
                 logError(getLineNumber(), _);\
                 return -1;\
             }
+
+char* addressingTypeStr(enum AddressingType addressingType);
 #endif /*ASSEMBLER_ERRORLOG_H*/
