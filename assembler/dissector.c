@@ -22,6 +22,10 @@ int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
         return 0;
     } else if (raw_arg[0] == '#') {
         argument->value.scalar = strtol((raw_arg + 1), &endptr, 10);
+        /*Check that the number we got can fit into 21 bits (the size of a "word" excluding A R E bits)*/
+        if((argument->value.scalar > MAX_21_BIT_WORD) || (argument->value.scalar < MIN_21_BIT_WORD)){
+            ERROR_RET((_,"Number %ld out of range", argument->value.scalar))
+        }
         if ((endptr == (raw_arg + 1)) || (*endptr != 0)) {
             ERROR_RET((_, "Argument addressed with # must be a number, not: %s", raw_arg));
         }

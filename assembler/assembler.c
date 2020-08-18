@@ -598,6 +598,10 @@ int handleDirective(DissectedDirective dissectedDirective) {
             char *iterator = iteratorBuf;
             strcpy(iteratorBuf, stripped);
             number = strtol(iterator, &iterator, 10);
+            /*Check that the number we got can fit into 24 bits (the size of a "word")*/
+            if((number > MAX_24_BIT_WORD) || (number < MIN_24_BIT_WORD)){
+                ERROR_RET((_,"Number %ld out of range", number))
+            }
             if (iterator == iteratorBuf) {
                 ERROR_RET((_, "Entries in \".data\" must be comma separated integer numbers. Got <%s>", stripped));
             }
