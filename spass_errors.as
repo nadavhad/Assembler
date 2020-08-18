@@ -29,10 +29,10 @@ inc Y
 dec MathFacts0
 
     .entry SOMEUNKNOWNLABEL
-    .entry 0DataIsNice
+    .entry DataIsNice11
     .entry DataIsNice0
-    .entry 0
-    .entry 0MyOtherOtherString
+    .entry A0
+    .entry MyOtherOtherString111
     .entry MyOtherOtherString
     .entry NULL
     .entry DataIsNice

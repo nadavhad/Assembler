@@ -85,7 +85,11 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
         index++;
         iterator++;
     }
-    strcpy(dissectedLine->command, accumulator);
+    stripWhiteSpaces(accumulator, dissectedLine->command);
+    if ((strlen(dissectedLine->label) > 0) && strlen(dissectedLine->command) == 0) {
+        ERROR_RET((_, "Label followed by an empty line is illegal"));
+    }
+
     if (dissectedLine->command[0] == '.') {
         dissectedLine->lineType = LT_DIRECTIVE;
     } else {

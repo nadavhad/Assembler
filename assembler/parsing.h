@@ -36,4 +36,10 @@ int findArgumentAddressingType(const char *, Argument *);
  */
 int validateLabel(const char *label);
 
+/**
+ * Copy the input string (rawStr) without leading and trailing whitespaces into stripped.
+ */
+int stripWhiteSpaces(char *rawStr, char stripped[MAX_LINE_LENGTH]);
+
+
 #endif /*ASSEMBLER_PARSING_H*/

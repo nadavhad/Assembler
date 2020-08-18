@@ -13,7 +13,7 @@
 /* Checks if a certain character is NUL ('\0'), EOF, newline or carriage return */
 #define END(c) (EOS(c) || eqEOF(c) || EOL(c))
 /* Checks if a certain character is whitespace, excluding newline */
-#define WHT(c) (EQ(c, ' ') || EQ(c, '\t'))
+#define WHT(c) (EQ(c, ' ') || EQ(c, '\t') || EOL(c))
 
 
 #endif /*ASSEMBLER_MACROS_H*/
