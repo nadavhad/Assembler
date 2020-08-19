@@ -3,11 +3,11 @@
 #include "assembler.h"
 #include "errorlog.h"
 #include "symbolTable.h"
-#include "assembler/symbolTable.h"
-#include "logging/errorlog.h"
-#include "assembler/assembler.h"
-#include "assembler/state.h"
-#include "assembler/externusage.h"
+#include "../symbolTable.h"
+#include "../errorlog.h"
+#include "../assembler.h"
+#include "../state.h"
+#include "../externusage.h"
 
 
 int getDirectiveType(DissectedLine dissectedLine, DissectedDirective *directive);

@@ -76,14 +76,6 @@ typedef struct {
 } DissectedDirective;
 
 /**
- * Differentiates the location of the argument in the command
- * TODO: is this used anywhere?
- */
-enum ArgumentPosition {
-    AP_SRC = 1, AP_DEST = 2
-};
-
-/**
  * Stores the literal value of an argument - a number or a symbol/label
  */
 typedef union {
@@ -100,7 +92,6 @@ typedef union {
  */
 typedef struct {
     enum AddressingType addressing;
-    int position;/*TODO: is this used anywhere?*/
     unsigned int reg;
     Data value;
 } Argument;

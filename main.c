@@ -1,4 +1,4 @@
-#include "../logging/errorlog.h"
+#include "errorlog.h"
 #include "assembler.h"
 #include "symbolTable.h"
 #include "externusage.h"

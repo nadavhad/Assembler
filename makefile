@@ -1,20 +1,17 @@
-SRCS = logging/errorlog.c assembler/assembler.c assembler/state.c assembler/dissector.c assembler/symbolTable.c assembler/externusage.c assembler/outfile.c
-HDRS = assembler/macros.h assembler/structs.h assembler/assembler.h assembler/constants.h assembler/parsing.h assembler/state.h assembler/symbolTable.h assembler/externusage.h assembler/outfile.h
-INCLUDE_PATH =  -Ilogging -Iassembler
+SRCS = errorlog.c assembler.c state.c dissector.c symbolTable.c externusage.c outfile.c
+HDRS = macros.h structs.h assembler.h constants.h parsing.h state.h symbolTable.h externusage.h outfile.h
 
-out/assembler.out: ${SRCS} ${HDRS}
-	mkdir -p out
-	gcc -g  -Wall -ansi -pedantic ${SRCS} assembler/main.c ${INCLUDE_PATH} -o out/assembler.out
-
-	#TODO delete this part from the makefile
-out/unit.out: unit.c ${SRCS} ${HDRS}
-	mkdir -p out
-	gcc -g unit.c ${SRCS} -o out/unit.out ${INCLUDE_PATH} -Wall -ansi -pedantic
+assembler: ${SRCS} ${HDRS}
+	gcc -g  -Wall -ansi -pedantic ${SRCS} main.c -o assembler
 
 clean:
-	rm -rf out/*
+	rm assembler unit tests/*.ob tests/*.ent tests/*.ext
 
-check: out/assembler.out
-	./out/assembler.out test
+check: assembler
+	./assembler tests/test
 
 $(V).SILENT:
+
+	#TODO delete this part from the makefile
+unit: unit.c ${SRCS} ${HDRS}
+	gcc -g unit.c ${SRCS} -o unit -Wall -ansi -pedantic

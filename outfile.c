@@ -4,7 +4,7 @@
 #include "externusage.h"
 #include "state.h"
 #include "symbolTable.h"
-#include "../logging/errorlog.h"
+#include "errorlog.h"
 
 static int writeLine(FILE *, int, long);
 

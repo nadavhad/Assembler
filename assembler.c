@@ -4,7 +4,7 @@
 #include "structs.h"
 #include "assembler.h"
 #include "state.h"
-#include "../logging/errorlog.h"
+#include "errorlog.h"
 #include "symbolTable.h"
 #include "macros.h"
 #include "outfile.h"
@@ -16,86 +16,30 @@ int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, i
 int writeOutputFiles(char *basefilename);
 
 /**
- * TODO: make sure 2's complement is not machine depepndent x
- * ASK:
- *    Can we use a contiguous array for data as well as code?
- *    Are .data numbers limited to char size? if so - what is the range? [-254, 255]/[-127, 128]/else
- *    Should we support escape sequences for .string? if so - which escapes? "\""? "\n"` etc.
+ * Flatten directory structure.
+ * Make should work by just typing 'make'
+ * Reorganize code
+ *   parsing h + c
+ *      All parsing code
+ *   assembler
+ *      All code common to first and second pass
+ *   firstPass
+ *      All code rlated only to first pass
+ *   secondPass
+ *      All code related only to second pass
+ *   Remove structs.h Move structs to appropriate module (h files)
+ * Leave
+ *   dissector
  *
- * TODO:
- * N d Add .as to input files
- * N d Check that each input line length is under than 80
- * Y d 0. Check if a label is valid (reserved words)
- * N d 1. Create symbol table (linked list. Data {Name, Value, Type, IsEntry})
- *   d  AddSymbol(name, value, type, entry) => error if label exists
- *   d  LookupSymbol(name)
- *   d  UpdateSymbol(name, value)
- * N d 2. handleCmdLabelFirstPass
- * N d 3. handleDirectiveLabelFirstPass
- * Y d 4. Build opcode skeleton
- *   d  0. Return data for each argument (addressing, register value, value)
- *   d  a. Opcode, funct, ARE, Addressing, registers,
- *   d  b. Arguments
- * N d 5. Update symbol table
- * N d 6. Update code skeleton
- * N d 7. Update state (IC)
- *   d 8. Handle directives
- * N d   9. Check directive type
- * N d  10. For .entry, extern
- * N d     10.1 Parse line
- * N d     10.2 validate label  (and no more)
- * N d     10.3 for .entry - continue
- * N d          Validate no label BEFORE
- * N d     10.4. For .extern
- * N d              - Add to symbol table (value 0, as extern)
- * N d              - if symbol already exists (only as an extern(?)) it's OK. Do nothing.
- * N d          Validate no label BEFORE
- * Y d 11. .data, .string
- * Y d    Later use that in IMMEDIATE addressing as well
- * Y d    11.1 Add data array to state
- * Y d    11.2 .data - parse data (comma separated numbers), add to Data array, increment DC by data size
- * Y d         Loop
- * Y d              strtol, check we got a number
- * Y d              Strip, make sure the string is empty or starts with ','
- * Y d              "eat" the comma
- * Y d    11.3 .string - parse data (quoted string), add to Data array, add terminating 0, increment DC by data size + 1
- * Y d         Strip
- * Y d         Make sure that starts and ends with "
- * Y d         Remove quotes
- * Y d         Make sure no quotes in the string
- * N d 12. Save ICF, DCF
- *
- * Phase 2
- * Y d 1. Write externUsageTable
- * Y d    Make sure to free wherever other lists are freed.
- * N d 2. Write second pass skeleton
- * N d       (reset dc[0], ic [100])
- * N d       for each line
- * N d         skip .extern, .string, .data
- * N d         handle .entry
- * N d           add isEntry to symbol table
- * N d         or
- * N d         handle command
- * N d           dissectLabel
- * N d           dissectCommand
- * N d           findOperation
- * N d           verifyArguments
- * N d           encodeCommand
- * N d           addCommand
- * N d           for external symbols - add to external usage table
- * Y d             implement for buildDataByte
- * Y d                AT_DIRECT
- * Y d                AT_RELATIVE
- * X   3. Create output files
- * Y       code
- * N       entry
- * N       externals
- *
- * N d X Write tests (for stage 1)
- * Y   X Write tests (for stage 2)
- *   d  X. Free lists (error log, symbol table, etc.)
- *
- *     X. Document!!!!!!
+ *   main
+ *      main
+ *      proceesAssembllyFile
+ *      writeOutputFiles
+ *   errorlog -> rename to errorLog
+ *   symbolTable
+ *   exterusage -> rename to externUsage
+ *   state
+ * Document
  */
 
 int processAssemblyFile(char *basefileName) {

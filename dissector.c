@@ -4,13 +4,12 @@
 #include <ctype.h>
 #include "parsing.h"
 #include "state.h"
-#include "../logging/errorlog.h"
+#include "errorlog.h"
 #include "macros.h"
 
 int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
     char *endptr;
     argument->addressing = AT_UNSET;
-    argument->position = 0;
     argument->reg = 0;
     argument->value.scalar = 0;
     if ((raw_arg[0] == 'r') && (strlen(raw_arg) == 2) && (raw_arg[1] >= '0') && (raw_arg[1] <= '7')) {
@@ -150,10 +149,6 @@ int validateLabel(const char *label) {
 
     if (strlen(label) > MAX_LABEL_LENGTH) ERROR_RET(
             (_, "Illegal label, max label length is 31 characters. Label: %s", label));
-
-    /* TODO: This check is unimplemented. Is this needed at all? I think it's implemented in the symbol table */
-    if (/* label is duplicate*/0) ERROR_RET((_,
-            "Illegal label, duplicate labels aren't allowed and this label already exists: %s", label));
 
     if ((strlen(label) == 3)
         && (label[0] == 'r')

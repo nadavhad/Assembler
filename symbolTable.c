@@ -5,7 +5,7 @@
 #include "errorlog.h"
 #include "structs.h"
 #include "state.h"
-#include "../logging/errorlog.h"
+#include "errorlog.h"
 
 struct Node {
     SymbolData data;
