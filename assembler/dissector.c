@@ -5,10 +5,7 @@
 #include "parsing.h"
 #include "state.h"
 #include "../logging/errorlog.h"
-
 #include "macros.h"
-
-int validateLabel(const char *label);
 
 int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
     char *endptr;
@@ -23,8 +20,8 @@ int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
     } else if (raw_arg[0] == '#') {
         argument->value.scalar = strtol((raw_arg + 1), &endptr, 10);
         /*Check that the number we got can fit into 21 bits (the size of a "word" excluding A R E bits)*/
-        if((argument->value.scalar > MAX_21_BIT_WORD) || (argument->value.scalar < MIN_21_BIT_WORD)){
-            ERROR_RET((_,"Number %ld out of range", argument->value.scalar))
+        if ((argument->value.scalar > MAX_21_BIT_WORD) || (argument->value.scalar < MIN_21_BIT_WORD)) {
+            ERROR_RET((_, "Number %ld out of range", argument->value.scalar))
         }
         if ((endptr == (raw_arg + 1)) || (*endptr != 0)) {
             ERROR_RET((_, "Argument addressed with # must be a number, not: %s", raw_arg));
@@ -53,7 +50,7 @@ int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
 int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
     char accumulator[MAX_LINE_LENGTH];
     char *iterator = rawLine;
-    int index = 0;
+    int index;
 
     memset(dissectedLine->label, 0, sizeof(dissectedLine->label));
     /* strip leading whitespace */
@@ -102,6 +99,9 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
     return 0;
 }
 
+/**
+ * A table with all operation/command data
+ */
 static Operation ops[NUM_OPERATIONS] = {
         /*
         op  fun  name   src addressing                                              dst addressing*/
@@ -122,7 +122,9 @@ static Operation ops[NUM_OPERATIONS] = {
         {14, 0, "rts",  {AT_UNSET,     AT_UNSET,  AT_UNSET,    AT_UNSET, AT_UNSET}, {AT_UNSET,     AT_UNSET,    AT_UNSET,    AT_UNSET, AT_UNSET}, 0},
         {15, 0, "stop", {AT_UNSET,     AT_UNSET,  AT_UNSET,    AT_UNSET, AT_UNSET}, {AT_UNSET,     AT_UNSET,    AT_UNSET,    AT_UNSET, AT_UNSET}, 0}
 };
-
+/**
+ * Directive names/strings
+ */
 static char directives[4][7] = {
         "entry",
         "data",
@@ -149,6 +151,7 @@ int validateLabel(const char *label) {
     if (strlen(label) > MAX_LABEL_LENGTH) ERROR_RET(
             (_, "Illegal label, max label length is 31 characters. Label: %s", label));
 
+    /* TODO: This check is unimplemented. Is this needed at all? I think it's implemented in the symbol table */
     if (/* label is duplicate*/0) ERROR_RET((_,
             "Illegal label, duplicate labels aren't allowed and this label already exists: %s", label));
 
@@ -170,35 +173,20 @@ int validateLabel(const char *label) {
 
     for (iter = (char *) label; *iter != 0; ++iter) {
         if (!isalnum(*iter)) {
-            ERROR_RET((_, "Illegal label: %s", label));
+            ERROR_RET((_, "Illegal label, labels must be alphanumeric: %s", label));
         }
     }
     return 0;
 }
 
-
 int findOperation(char *cmd, Operation *op) {
     int i;
-    char errormsg[100] = "Undefined operation: ";
     for (i = 0; i < NUM_OPERATIONS; i++) {
         if (strcmp(cmd, ops[i].name) == 0) {
             (*op) = ops[i];
             return 0;
         }
     }
-    strcat(errormsg, cmd);
-    logError(getLineNumber(), errormsg);
-    return -1;
-}
-
-int parseString(char *string) {
-    int start, end;
-    start = 0;
-    end = strlen(string) - 1;
-    while (isspace(string[start]) == 1) { start++; }
-    while (isspace(string[end]) == 1) { end--; }
-    if ((string[start] == '\"') && (string[end] == '\"')) {
-
-    }
-    return 0;
+    /* if we didn't return until here, we didn't find the command in the operation table */
+    ERROR_RET((_, "Undefined operation: %s", cmd));
 }

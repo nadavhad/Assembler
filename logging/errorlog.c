@@ -67,7 +67,7 @@ void clearErrorLog() {
     _head = NULL;
 }
 
-char* addressingTypeStr(enum AddressingType addressingType) {
+char *addressingTypeStr(enum AddressingType addressingType) {
     static char buf[10];
     switch (addressingType) {
         case AT_IMMEDIATE:

@@ -13,7 +13,7 @@
 
 int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, int *opcodeLen);
 
-int writeOutputFiles(char*);
+int writeOutputFiles(char *basefilename);
 
 /**
  * TODO: make sure 2's complement is not machine depepndent x
@@ -46,21 +46,23 @@ int writeOutputFiles(char*);
  * N d     10.2 validate label  (and no more)
  * N d     10.3 for .entry - continue
  * N d          Validate no label BEFORE
- * N d     10.4. For .extern - Add to symbol table (value 0, as extern) - if symbol already exists (only as an extern(?)) it's OK. Do nothing.
+ * N d     10.4. For .extern
+ * N d              - Add to symbol table (value 0, as extern)
+ * N d              - if symbol already exists (only as an extern(?)) it's OK. Do nothing.
  * N d          Validate no label BEFORE
- *   d 11. .data, .string
+ * Y d 11. .data, .string
  * Y d    Later use that in IMMEDIATE addressing as well
  * Y d    11.1 Add data array to state
  * Y d    11.2 .data - parse data (comma separated numbers), add to Data array, increment DC by data size
- *   d         Loop
- *   d              strtol, check we got a number
- *   d              Strip, make sure the string is empty or starts with ','
- *   d              "eat" the comma
+ * Y d         Loop
+ * Y d              strtol, check we got a number
+ * Y d              Strip, make sure the string is empty or starts with ','
+ * Y d              "eat" the comma
  * Y d    11.3 .string - parse data (quoted string), add to Data array, add terminating 0, increment DC by data size + 1
- *   d         Strip
- *   d         Make sure that starts and ends with "
- *   d         Remove quotes
- *   d         Make sure no quotes in the string
+ * Y d         Strip
+ * Y d         Make sure that starts and ends with "
+ * Y d         Remove quotes
+ * Y d         Make sure no quotes in the string
  * N d 12. Save ICF, DCF
  *
  * Phase 2
@@ -212,7 +214,7 @@ int firstPass(char *fileName) {
         incLineNumber();
         if (strlen(line) > MAX_LINE_LENGTH) {
             /* Read everything up to the end of the line (or file) */
-            while (!EOL(line[strlen(line)-1]) && fgets(line, MAX_LINE_LENGTH + 5, file) != NULL);
+            while (!EOL(line[strlen(line) - 1]) && fgets(line, MAX_LINE_LENGTH + 5, file) != NULL);
             logError(getLineNumber(), "Line is too long");
             continue;
         }
@@ -302,7 +304,7 @@ int buildDataByte(Argument arg, int databyteOffset, EncodedArg *databyte) {
             }
 
             if (symbolData.type == ST_EXTERNAL) {
-                addUsage(symbolData.name, getState()->IC+databyteOffset);
+                addUsage(symbolData.name, getState()->IC + databyteOffset);
                 databyte->E = 1;
                 databyte->R = 0;
                 databyte->data = 0;
@@ -330,8 +332,7 @@ int buildDataByte(Argument arg, int databyteOffset, EncodedArg *databyte) {
             break;
         case AT_REGISTER:
             return 2;
-        default:
-            ERROR_RET((_, "Illegal addressing type. Something terrible has happened!!!"));
+        default: ERROR_RET((_, "Illegal addressing type. Something terrible has happened!!!"));
     }
     return 0;
 }
@@ -519,7 +520,7 @@ int verifyArguments(Operation *op, CommandTokens *commandTokens) {
 
 int matchesAddressing(int validAddressingArr[5], char *arg, Argument *argData) {
     int i;
-    if (findArgumentAddressingType(arg, argData)) {
+    if (findArgumentAddressingType(arg, argData) == -1) {
         return -1;
     }
     for (i = 0; validAddressingArr[i] != -1; i++) {
@@ -599,8 +600,8 @@ int handleDirective(DissectedDirective dissectedDirective) {
             strcpy(iteratorBuf, stripped);
             number = strtol(iterator, &iterator, 10);
             /*Check that the number we got can fit into 24 bits (the size of a "word")*/
-            if((number > MAX_24_BIT_WORD) || (number < MIN_24_BIT_WORD)){
-                ERROR_RET((_,"Number %ld out of range", number))
+            if ((number > MAX_24_BIT_WORD) || (number < MIN_24_BIT_WORD)) {
+                ERROR_RET((_, "Number %ld out of range", number))
             }
             if (iterator == iteratorBuf) {
                 ERROR_RET((_, "Entries in \".data\" must be comma separated integer numbers. Got <%s>", stripped));
@@ -701,7 +702,7 @@ int secondPass(char *fileName) {
 /*************************
  *  Write output
  */
-int writeOutputFiles(char* basefilename) {
+int writeOutputFiles(char *basefilename) {
     createCodeOutputFile(basefilename);
     createEntryOutputFile(basefilename);
     createExternalOutputFile(basefilename);

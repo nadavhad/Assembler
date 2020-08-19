@@ -1,6 +1,5 @@
-#include "structs.h"
-#include "../logging/errorlog.h"
 #include <string.h>
+#include "state.h"
 
 State state;
 
