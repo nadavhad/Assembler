@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include "parsing.h"
 #include "state.h"
-#include "errorlog.h"
+#include "errorLog.h"
 #include "macros.h"
 
 int findArgumentAddressingType(const char *raw_arg, Argument *argument) {

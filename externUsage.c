@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include "externusage.h"
+#include "externUsage.h"
 
 struct Node {
     struct Node *next;

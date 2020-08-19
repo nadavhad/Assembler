@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include "outfile.h"
-#include "externusage.h"
+#include "externUsage.h"
 #include "state.h"
 #include "symbolTable.h"
-#include "errorlog.h"
+#include "errorLog.h"
 
 static int writeLine(FILE *, int, long);
 

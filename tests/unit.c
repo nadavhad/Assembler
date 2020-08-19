@@ -4,10 +4,10 @@
 #include "errorlog.h"
 #include "symbolTable.h"
 #include "../symbolTable.h"
-#include "../errorlog.h"
+#include "../errorLog.h"
 #include "../assembler.h"
 #include "../state.h"
-#include "../externusage.h"
+#include "../externUsage.h"
 
 
 int getDirectiveType(DissectedLine dissectedLine, DissectedDirective *directive);

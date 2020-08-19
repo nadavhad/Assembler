@@ -4,11 +4,11 @@
 #include "structs.h"
 #include "assembler.h"
 #include "state.h"
-#include "errorlog.h"
+#include "errorLog.h"
 #include "symbolTable.h"
 #include "macros.h"
 #include "outfile.h"
-#include "externusage.h"
+#include "externUsage.h"
 
 
 int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, int *opcodeLen);

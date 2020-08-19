@@ -1,7 +1,7 @@
-#include "errorlog.h"
+#include "errorLog.h"
 #include "assembler.h"
 #include "symbolTable.h"
-#include "externusage.h"
+#include "externUsage.h"
 
 int main(int argc, char **argv) {
     int i;
