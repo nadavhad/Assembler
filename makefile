@@ -1,4 +1,4 @@
-SRCS = errorlog.c assembler.c state.c dissector.c symbolTable.c externusage.c outfile.c
+SRCS = errorlog.c assembler.c state.c dissector.c symbolTable.c externusage.c outfile.c parsing.c
 HDRS = macros.h structs.h assembler.h constants.h parsing.h state.h symbolTable.h externusage.h outfile.h
 
 assembler: ${SRCS} ${HDRS}

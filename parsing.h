@@ -1,40 +1,20 @@
-#include "structs.h"
-
+#include <stdio.h>
+#include "constants.h"
 #ifndef ASSEMBLER_PARSING_H
 #define ASSEMBLER_PARSING_H
 
-/**
- * Splits a line of assembly code into a struct containing the label and command (with its args)
- * and also identifies the coarse line type.
- * rawLine - Input line
- * dissectedLine - the dissected input line
- * returns 0 on success.
- */
-int dissectLabel(char *, DissectedLine *);
-
-/**
- * Splits a command string into a command and its arguments
- * @return
- */
-int dissectCommand(char *line, CommandTokens *);
-
-/**
- * Finds what operation it is, fills the Operation struct with relevant data.
- * @return 0 on success, -1 on failure
- */
-int findOperation(char *, Operation *);
-
-/**
- * Finds the addressing type of the argument, and checks its validity.
- * @return addressing type (0..3), or -1 on error/mismatch
- */
-int findArgumentAddressingType(const char *, Argument *);
-
-/**
- * Validate that the argument is a valid label (no reserved words, alphanumric characters, etc.)
- * @return 0 is valid, 1 otherwise.
- */
-int validateLabel(const char *label);
+/* A shorthand macro useful for comparing two chars, especially nested in other macros */
+#define EQ(c, n) ((c) == (n))
+/* Checks if a certain character is NUL ('\0') */
+#define EOS(c) EQ(c,'\0')
+/* Checks if a certain character is EOF */
+#define eqEOF(c) EQ(c, EOF)
+/* Checks if a certain character is the end of a line: newline or carriage return */
+#define EOL(c) (EQ(c,'\n') || EQ(c, '\r'))
+/* Checks if a certain character is NUL ('\0'), EOF, newline or carriage return */
+#define END(c) (EOS(c) || eqEOF(c) || EOL(c))
+/* Checks if a certain character is whitespace, excluding newline */
+#define WHT(c) (EQ(c, ' ') || EQ(c, '\t') || EOL(c))
 
 /**
  * Copy the input string (rawStr) without leading and trailing whitespaces into stripped.

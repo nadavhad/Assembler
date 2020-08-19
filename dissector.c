@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
+#include "dissector.h"
 #include "parsing.h"
 #include "state.h"
 #include "errorLog.h"
