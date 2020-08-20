@@ -43,6 +43,19 @@ static int matchesAddressing(int validAddressingArr[5], char *arg, Argument *arg
  *   exterusage -> rename to externUsage
  *   state
  * Document
+ *   Y  assembler
+ *   N  constants.h
+ *   N  dissector
+ *   Y  errorlog
+ *   Y  externusage
+ *   N  firstpass
+ *   N  main.c
+ *   Y  outfile
+ * d -  parsing
+ *   Y  secondpass
+ *   N  state
+ *   N  symboltable
+ * d -  types.h
  */
 
 int handleCommand(DissectedLine dissectedLine) {
@@ -308,7 +321,7 @@ int handleDirective(DissectedDirective dissectedDirective) {
                 ERROR_RET((_, "Expected ',', got unexpected characters: <%s>", stripped))
             }
         }
-        /* empty .data : warning? */
+        /* TODO: empty .data : warning? */
         return 0;
     }
 /* invalid DirectiveType */

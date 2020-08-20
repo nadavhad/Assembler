@@ -1,6 +1,9 @@
 #ifndef ASSEMBLER_TYPES_H
 #define ASSEMBLER_TYPES_H
 
+/**
+ * A boolean data type
+ */
 enum bool {
     FALSE, TRUE
 };
@@ -55,4 +58,5 @@ typedef enum {
     ST_DATA,
     ST_EXTERNAL
 } SymbolType;
+
 #endif /*ASSEMBLER_TYPES_H*/
