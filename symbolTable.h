@@ -1,9 +1,23 @@
 #ifndef ASSEMBLER_SYMBOL_TABLE_H
 #define ASSEMBLER_SYMBOL_TABLE_H
 
-#include "structs.h"
+#include "constants.h"
 
-enum bool {FALSE, TRUE};
+/**
+ * An enum for symbol properties:
+ * Code (commands),
+ * Data (data/string directives),
+ * External (external symbols)
+ */
+typedef enum {
+    ST_CODE,
+    ST_DATA,
+    ST_EXTERNAL
+} SymbolType;
+
+enum bool {
+    FALSE, TRUE
+};
 
 typedef struct {
     char name[MAX_LABEL_LENGTH];
@@ -25,6 +39,7 @@ int incrementDataSymbolsOffset(int icf);
 void clearSymbolTable();
 
 int startSymbolTableIteration(void **iterator, SymbolData *data);
+
 int getSymbolTableNext(void **iterator, SymbolData *data);
 
 #endif /*ASSEMBLER_SYMBOL_TABLE_H*/

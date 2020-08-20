@@ -6,7 +6,6 @@
 #include "parsing.h"
 #include "state.h"
 #include "errorLog.h"
-#include "macros.h"
 
 int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
     char *endptr;
@@ -139,7 +138,7 @@ int validateLabel(const char *label) {
      * Requirements:
      * 1. label[0] is alphabetic
      * 2. len(label) <= 31
-     * 3. unique
+     * 3. unique - checked in symbol table
      * 4. not reserved:
      *  a. not r0..r7
      *  b. not command
@@ -185,4 +184,136 @@ int findOperation(char *cmd, Operation *op) {
     }
     /* if we didn't return until here, we didn't find the command in the operation table */
     ERROR_RET((_, "Undefined operation: %s", cmd));
+}
+
+int getDirectiveType(DissectedLine dissectedLine, DissectedDirective *directive) {
+    int index = 0;
+    char *iterator = dissectedLine.command;
+    /* Tokenize the line into: directive and directive arguments */
+    /* Find the directive token. */
+    memset(directive->directiveToken, 0, sizeof(directive->directiveToken));
+    while (!END(*iterator) && !WHT(*iterator) && (index < (sizeof(directive->directiveToken) - 1))) {
+        directive->directiveToken[index] = *iterator;
+        index++;
+        iterator++;
+    }
+    /* Store the directive "argument" - the rest of the line. */
+    stripWhiteSpaces(iterator, directive->directiveArgs);
+
+    /* Find the directive type */
+    if (strcmp(directive->directiveToken, DATA) == 0) {
+        directive->type = DT_DATA;
+    } else if (strcmp(directive->directiveToken, STRING) == 0) {
+        directive->type = DT_STRING;
+    } else if (strcmp(directive->directiveToken, ENTRY) == 0) {
+        directive->type = DT_ENTRY;
+    } else if (strcmp(directive->directiveToken, EXTERN) == 0) {
+        directive->type = DT_EXTERN;
+    } else {
+        directive->type = DT_UNDEFINED;
+        ERROR_RET((_, "Invalid directive: %s", directive->directiveToken));
+    }
+    return 0;
+}
+
+/* Split the input to the command and the parameters. Also removes redundant white spaces. */
+int splitCommandAndParams(char *line, char *token, char *remainder) {
+    char parts[MAX_TOKENS + 1][MAX_LINE_LENGTH];
+    int i;
+    /*
+     * We want to get rid of any redundant whitespaces, and get the command string + comma separated
+     * parameters (without whitespaces).
+     * Every valid command contains at most 4 tokens (command, param1, comma, param2).
+     * We read up to seven tokens in order to detect any extraneous tokens.
+     **/
+    int n = sscanf(line, "%s%s%s%s%s%s", token, parts[0], parts[1], parts[2], parts[3], parts[4]);
+    if (n == -1) { /* No token detected. This is an empty string. */
+        return -1;
+    }
+    /* Check if the last character in the command token is a comma */
+    if (token[strlen(token) - 1] == ',') {
+        logError(getLineNumber(), "Illegal comma");
+        return -1;
+    }
+    /* If n > MAX_TOKENS it means we got more text than the maximum text expected*/
+    if (n > MAX_TOKENS) {
+        logError(getLineNumber(), "Extraneous text after end of command");
+        return -1;
+    }
+    remainder[0] = 0;
+    /* Concatenate all param tokens, making sure we have a separating comma between tokens. */
+    for (i = 0; i < n - 1; i++) {
+        int len = strlen(remainder);
+        if ((len != 0) && (remainder[len - 1] != ',') && (parts[i][0] != ',')) {
+            logError(getLineNumber(), "Missing comma");
+            return -1;
+        }
+        strcat(remainder, parts[i]);
+    }
+    return 0;
+}
+
+int tokenizeParams(char *remainder, CommandTokens *parsedCommand) {
+    int charIndex = 0;
+    char *currArg;
+    /* Start with all empty tokens. */
+    parsedCommand->arg1[0] = parsedCommand->arg2[0] = 0;
+    /* While we didn't get to the end of the remainder */
+    currArg = parsedCommand->arg1;
+    parsedCommand->numArgs = 0;
+    while (*remainder != 0) {
+        if (parsedCommand->numArgs > MAX_PARAMS - 1) { /* We have an extra parameter after the last valid token. */
+            logError(getLineNumber(), "Extraneous text after end of command");
+            return -1;
+        }
+        if (*remainder == ',') {
+            /* Found a comma */
+            if (charIndex == 0) {
+                /* Beginning of token - Must be an error */
+                if (parsedCommand->numArgs == 0) {
+                    /* First token starts with a comma. */
+                    logError(getLineNumber(), "Illegal comma");
+                    return -1;
+                }
+                /* Some other (not first) token starts with a comma. We have two consecutive commas. */
+                logError(getLineNumber(), "Multiple consecutive commas");
+                return -1;
+            }
+            /* Closing the token */
+            currArg[charIndex] = 0;
+            charIndex = 0;
+            parsedCommand->numArgs++;
+            currArg = parsedCommand->arg2;
+            remainder++;
+        } else {
+            /* Plain character. Add to current param*/
+            currArg[charIndex] = *remainder;
+            charIndex++;
+            remainder++;
+        }
+    }
+    /* We have an extra parameter after the last valid token. */
+    if (parsedCommand->numArgs > MAX_PARAMS - 1) {
+        ERROR_RET((_, "Extraneous text after end of command. Too many parameters"));
+    }
+    if (charIndex > 0) {
+        parsedCommand->numArgs++;
+    }
+    currArg[charIndex] = 0;
+    return 0;
+}
+
+int dissectCommand(char *commandStr, CommandTokens *parsedCommand) {
+    /* 1. Check command structure (tokens, command, number of arguments)
+     * 2. Split line to tokens: CommandTokens, argument1, argument2
+     * */
+    char remainder[MAX_LINE_LENGTH];
+    if (splitCommandAndParams(commandStr, parsedCommand->command, remainder) < 0) {
+        /* There was an error in the input */
+        return -1;
+    }
+    if (tokenizeParams(remainder, parsedCommand) < 0) { /* There was an error in the input */
+        return -1;
+    }
+    return 0;
 }

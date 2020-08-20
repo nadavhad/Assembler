@@ -54,7 +54,7 @@ dkms.conf
 cmake-build-debug/
 CMakeLists.txt
 .idea/
-out/assembler
 /cmake-build-debug-visual-studio/
 core
 .DS_STORE
+assembler

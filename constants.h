@@ -22,5 +22,7 @@
 
 #define MIN_21_BIT_WORD -1048576
 
+/* Number of Operations available in .as syntax*/
+#define NUM_OPERATIONS 16
 
 #endif /*ASSEMBLER_CONSTANTS_H*/

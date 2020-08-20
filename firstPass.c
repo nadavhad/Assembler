@@ -1,0 +1,66 @@
+#include <stdio.h>
+#include <string.h>
+#include "firstPass.h"
+#include "constants.h"
+#include "dissector.h"
+#include "state.h"
+#include "symbolTable.h"
+#include "parsing.h"
+#include "errorLog.h"
+#include "assembler.h"
+
+int firstPass(char *fileName) {
+    FILE *file;
+    char line[MAX_LINE_LENGTH + 5];
+    DissectedLine dissectedLine;
+    DissectedDirective dissectedDirective;
+    file = fopen(fileName, "r");
+    /* if we can't open the file, no point in continuing */
+    if (file == NULL) {
+        perror(fileName);
+        return -1;
+    }
+
+    initializeState();
+    while (1) {
+        if (fgets(line, MAX_LINE_LENGTH + 5, file) == NULL) {
+            /* We got to the end of a file: close file, log IC and DC values */
+            fclose(file);
+            getState()->ICF = getState()->IC;
+            getState()->DCF = getState()->DC;
+            incrementDataSymbolsOffset(getState()->ICF);
+            return 0;
+        }
+        incLineNumber();
+        if (strlen(line) > MAX_LINE_LENGTH) {
+            /* Read everything up to the end of the line (or file) */
+            while (!EOL(line[strlen(line) - 1]) && fgets(line, MAX_LINE_LENGTH + 5, file) != NULL);
+            logError(getLineNumber(), "Line is too long");
+            continue;
+        }
+        /* if the label is invalid, we have nothing to do with the line */
+        if (dissectLabel(line, &dissectedLine) == -1) {
+            continue;
+        }
+
+        switch (dissectedLine.lineType) {
+            /* ignore empty line or comment */
+            case LT_COMMENT:
+                break;
+                /* handle commands */
+            case LT_COMMAND:
+                if (handleCmdLabelFirstPass(dissectedLine) == 0) {
+                    handleCommand(dissectedLine);
+                }
+                break;
+                /* handle directives */
+            case LT_DIRECTIVE:
+                if (getDirectiveType(dissectedLine, &dissectedDirective) == 0) {
+                    if (handleDirectiveLabelFirstPass(dissectedLine, dissectedDirective) == 0) {
+                        handleDirective(dissectedDirective);
+                    }
+                }
+                break;
+        }
+    }
+}

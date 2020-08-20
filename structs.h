@@ -32,30 +32,6 @@ enum AddressingType {
 };
 
 /**
- * An enum for symbol properties:
- * Code (commands),
- * Data (data/string directives),
- * External (external symbols)
- */
-typedef enum {
-    ST_CODE,
-    ST_DATA,
-    ST_EXTERNAL
-} SymbolType;
-
-/**
- * A struct containing data for a line of code,
- * dissected to the the label/symbol (empty if non-existant),
- * rest of line (command/directive + args),
- * and a LineType value indicating what type of line this is (see docs on the LineType enum)
- */
-typedef struct {
-    char label[MAX_LINE_LENGTH];
-    char command[MAX_LINE_LENGTH];
-    LineType lineType;
-} DissectedLine;
-
-/**
  * An enum containing the different types of directives, and a invalid value
  */
 enum DirectiveType {
@@ -65,15 +41,6 @@ enum DirectiveType {
     DT_ENTRY,
     DT_EXTERN
 };
-
-/**
- * A container for relevant directive data: the type of directive, the raw code, and the argument string
- */
-typedef struct {
-    enum DirectiveType type;
-    char directiveToken[10];
-    char directiveArgs[MAX_LINE_LENGTH];
-} DissectedDirective;
 
 /**
  * Stores the literal value of an argument - a number or a symbol/label
@@ -122,30 +89,5 @@ typedef struct {
     int destAddressing[5];
     int numArgs;
 } Operation;
-
-/**
- * The bit-encoded command/operation data/"word"
- */
-typedef struct {
-    unsigned int E: 1;
-    unsigned int R: 1;
-    unsigned int A: 1;
-    unsigned int funct: 5;
-    unsigned int destRegister: 3;
-    unsigned int destAddressing: 2;
-    unsigned int srcRegister: 3;
-    unsigned int srcAddressing: 2;
-    unsigned int opcode: 6;
-} EncodedOperation;
-
-/**
- * The bit-encoded data for argument "words"
- */
-typedef struct {
-    unsigned int E: 1;
-    unsigned int R: 1;
-    unsigned int A: 1;
-    unsigned int data: 21;
-} EncodedArg;
 
 #endif /*ASSEMBLER_STRUCTS_H*/
