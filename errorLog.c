@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "structs.h"
+#include "types.h"
 
 #define MAX_ERROR_LENGTH 200
 struct Node {

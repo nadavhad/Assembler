@@ -3,9 +3,6 @@
 #include <stdio.h>
 #include "symbolTable.h"
 #include "errorLog.h"
-#include "structs.h"
-#include "state.h"
-#include "errorLog.h"
 
 struct Node {
     SymbolData data;

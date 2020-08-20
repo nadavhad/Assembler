@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "structs.h"
+#include "types.h"
 #include "assembler.h"
 #include "state.h"
 #include "errorLog.h"

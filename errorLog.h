@@ -2,7 +2,7 @@
 #define ASSEMBLER_ERRORLOG_H
 
 #include "state.h"
-#include "structs.h"
+#include "types.h"
 
 /**
  * Log an error

@@ -2,22 +2,7 @@
 #define ASSEMBLER_SYMBOL_TABLE_H
 
 #include "constants.h"
-
-/**
- * An enum for symbol properties:
- * Code (commands),
- * Data (data/string directives),
- * External (external symbols)
- */
-typedef enum {
-    ST_CODE,
-    ST_DATA,
-    ST_EXTERNAL
-} SymbolType;
-
-enum bool {
-    FALSE, TRUE
-};
+#include "types.h"
 
 typedef struct {
     char name[MAX_LABEL_LENGTH];
