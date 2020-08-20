@@ -6,15 +6,17 @@
 #include "state.h"
 #include "errorLog.h"
 #include "symbolTable.h"
-#include "outfile.h"
 #include "parsing.h"
 #include "externUsage.h"
-#include "firstPass.h"
 #include "dissector.h"
 
+static int buildDataByte(Argument arg, int databyteOffset, EncodedArg *databyte);
 
-int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, int *opcodeLen);
+static int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, int *opcodeLen);
 
+static int verifyArguments(Operation *op, CommandTokens *commandTokens);
+
+static int matchesAddressing(int validAddressingArr[5], char *arg, Argument *argData);
 
 /**
  * Flatten directory structure.
@@ -43,22 +45,6 @@ int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, i
  * Document
  */
 
-
-/* ************************
- *  First pass
- */
-
-/*------------------------
- *  Commands
- */
-
-int handleCmdLabelFirstPass(DissectedLine dissectedLine) {
-    if (addSymbol(dissectedLine.label, getState()->IC, ST_CODE, FALSE) != 0) {
-        return -1;
-    }
-    return 0;
-}
-
 int handleCommand(DissectedLine dissectedLine) {
     CommandTokens commandTokens;
     Operation command;
@@ -86,7 +72,7 @@ int handleCommand(DissectedLine dissectedLine) {
 /**
  * Returns 2 if an argument doesn't need a data byte, 0 on success, and -1 on failure.
  */
-int buildDataByte(Argument arg, int databyteOffset, EncodedArg *databyte) {
+static int buildDataByte(Argument arg, int databyteOffset, EncodedArg *databyte) {
     SymbolData symbolData;
     memset(databyte, 0, sizeof(*databyte));
     switch (arg.addressing) {
@@ -140,7 +126,7 @@ int buildDataByte(Argument arg, int databyteOffset, EncodedArg *databyte) {
     return 0;
 }
 
-int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, int *opcodeLen) {
+static int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, int *opcodeLen) {
     EncodedOperation operation;
     EncodedArg arg[2];
     int numArgs = 0;
@@ -208,14 +194,11 @@ int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, i
     return 0;
 }
 
-
-
-int verifyArguments(Operation *op, CommandTokens *commandTokens) {
+static int verifyArguments(Operation *op, CommandTokens *commandTokens) {
     if (commandTokens->numArgs != op->numArgs) {
         ERROR_RET((_, "Wrong number of arguments for %s. Expected: %d Got: %d",
                 op->name, op->numArgs, commandTokens->numArgs));
     }
-
     if (op->numArgs > 0) {
         if (op->srcAddressing[0] == AT_UNSET) {
             if (matchesAddressing(op->destAddressing, commandTokens->arg1, &commandTokens->arg1Data) != 0) {
@@ -236,7 +219,7 @@ int verifyArguments(Operation *op, CommandTokens *commandTokens) {
     return 0;
 }
 
-int matchesAddressing(int validAddressingArr[5], char *arg, Argument *argData) {
+static int matchesAddressing(int validAddressingArr[5], char *arg, Argument *argData) {
     int i;
     if (findArgumentAddressingType(arg, argData) == -1) {
         return -1;
@@ -331,31 +314,4 @@ int handleDirective(DissectedDirective dissectedDirective) {
 /* invalid DirectiveType */
     ERROR_RET((_, "Unexpected value: "));
 
-}
-
-int handleDirectiveLabelFirstPass(DissectedLine dissectedLine, DissectedDirective dissectedDirective) {
-    enum bool isEntry = FALSE;
-    /* Any label before .entry/.extern is ignored. We issue a warning to the user. */
-    if ((dissectedDirective.type == DT_ENTRY) || (dissectedDirective.type == DT_EXTERN)) {
-        if (strlen(dissectedLine.label) > 0) {
-            printf("%d: Warning: There is a label before %s - it will be ignored\n", getLineNumber(),
-                   (dissectedDirective.type == DT_ENTRY) ? ".entry" : ".extern");
-        }
-        return 0;
-    }
-
-    if (addSymbol(dissectedLine.label, getState()->DC, ST_DATA, isEntry) != 0) {
-        return -1;
-    }
-    return 0;
-}
-
-/*************************
- *  Write output
- */
-int writeOutputFiles(char *basefilename) {
-    createCodeOutputFile(basefilename);
-    createEntryOutputFile(basefilename);
-    createExternalOutputFile(basefilename);
-    return 0;
 }

@@ -7,6 +7,8 @@
 #include "state.h"
 #include "errorLog.h"
 
+static int splitCommandAndParams(char *line, char *token, char *remainder);
+
 int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
     char *endptr;
     argument->addressing = AT_UNSET;
@@ -217,7 +219,7 @@ int getDirectiveType(DissectedLine dissectedLine, DissectedDirective *directive)
 }
 
 /* Split the input to the command and the parameters. Also removes redundant white spaces. */
-int splitCommandAndParams(char *line, char *token, char *remainder) {
+static int splitCommandAndParams(char *line, char *token, char *remainder) {
     char parts[MAX_TOKENS + 1][MAX_LINE_LENGTH];
     int i;
     /*
@@ -232,21 +234,18 @@ int splitCommandAndParams(char *line, char *token, char *remainder) {
     }
     /* Check if the last character in the command token is a comma */
     if (token[strlen(token) - 1] == ',') {
-        logError(getLineNumber(), "Illegal comma");
-        return -1;
+        ERROR_RET((_, "Illegal comma"));
     }
     /* If n > MAX_TOKENS it means we got more text than the maximum text expected*/
     if (n > MAX_TOKENS) {
-        logError(getLineNumber(), "Extraneous text after end of command");
-        return -1;
+        ERROR_RET((_, "Extraneous text after end of command"));
     }
     remainder[0] = 0;
     /* Concatenate all param tokens, making sure we have a separating comma between tokens. */
     for (i = 0; i < n - 1; i++) {
         int len = strlen(remainder);
         if ((len != 0) && (remainder[len - 1] != ',') && (parts[i][0] != ',')) {
-            logError(getLineNumber(), "Missing comma");
-            return -1;
+            ERROR_RET((_, "Missing comma"));
         }
         strcat(remainder, parts[i]);
     }
@@ -263,8 +262,7 @@ int tokenizeParams(char *remainder, CommandTokens *parsedCommand) {
     parsedCommand->numArgs = 0;
     while (*remainder != 0) {
         if (parsedCommand->numArgs > MAX_PARAMS - 1) { /* We have an extra parameter after the last valid token. */
-            logError(getLineNumber(), "Extraneous text after end of command");
-            return -1;
+            ERROR_RET((_, "Extraneous text after end of command"));
         }
         if (*remainder == ',') {
             /* Found a comma */
@@ -272,12 +270,10 @@ int tokenizeParams(char *remainder, CommandTokens *parsedCommand) {
                 /* Beginning of token - Must be an error */
                 if (parsedCommand->numArgs == 0) {
                     /* First token starts with a comma. */
-                    logError(getLineNumber(), "Illegal comma");
-                    return -1;
+                    ERROR_RET((_, "Illegal comma"));
                 }
                 /* Some other (not first) token starts with a comma. We have two consecutive commas. */
-                logError(getLineNumber(), "Multiple consecutive commas");
-                return -1;
+                ERROR_RET((_, "Multiple consecutive commas"));
             }
             /* Closing the token */
             currArg[charIndex] = 0;

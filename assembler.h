@@ -3,24 +3,9 @@
 
 #include "dissector.h"
 
-int handleCmdLabelFirstPass(DissectedLine dissectedLine);
-
 int handleDirective(DissectedDirective dissectedDirective);
 
-int handleDirectiveLabelFirstPass(DissectedLine line, DissectedDirective dissectedDirective);
-
 int handleCommand(DissectedLine dissectedLine);
-
-int verifyArguments(Operation *op, CommandTokens *commandTokens);
-
-/**
- *
- * @param validAddressingArr
- * @param arg
- * @param argData
- * @return
- */
-int matchesAddressing(int validAddressingArr[5], char *arg, Argument *argData);
 
 /**
  * The bit-encoded command/operation data/"word"

@@ -6,11 +6,42 @@
 #include "symbolTable.h"
 #include "errorLog.h"
 
+/**
+* Creates the output .obj file
+* @return -1 on error
+*/
+static int createEntryOutputFile(char *fileName);
+
+/**
+ * Creates the output .ext file
+ * @return -1 on error
+ */
+static int createExternalOutputFile(char *fileName);
+
+/**
+* Creates the output .ent file
+* @return -1 on error
+*/
+static int createCodeOutputFile(char *fileName);
+
 static int writeLine(FILE *, int, long);
 
-FILE *openOutFile(const char *basefilename, const char *extension, char *outFileName);
+static FILE *openOutFile(const char *basefilename, const char *extension, char *outFileName);
 
-int createCodeOutputFile(char *basefilename) {
+static int writeLine(FILE *outfile, int num, long data) {
+    fprintf(outfile, "%07d %06lx\n", num, data);
+    return 0;
+}
+
+static FILE *openOutFile(const char *basefilename, const char *extension, char *outFileName) {
+    FILE *outfile;
+    strcpy(outFileName, basefilename);
+    strcat(outFileName, extension);
+    outfile = fopen(outFileName, "w+");
+    return outfile;
+}
+
+static int createCodeOutputFile(char *basefilename) {
     int dc, ic;
     long word;
     FILE *outfile;
@@ -38,20 +69,7 @@ int createCodeOutputFile(char *basefilename) {
     return 0;
 }
 
-FILE *openOutFile(const char *basefilename, const char *extension, char *outFileName) {
-    FILE *outfile;
-    strcpy(outFileName, basefilename);
-    strcat(outFileName, extension);
-    outfile = fopen(outFileName, "w+");
-    return outfile;
-}
-
-static int writeLine(FILE *outfile, int num, long data) {
-    fprintf(outfile, "%07d %06lx\n", num, data);
-    return 0;
-}
-
-int createEntryOutputFile(char *fileName) {
+static int createEntryOutputFile(char *fileName) {
     FILE *file = NULL;
     void *iterator;
     SymbolData symbolData;
@@ -79,7 +97,7 @@ int createEntryOutputFile(char *fileName) {
     return 0;
 }
 
-int createExternalOutputFile(char *fileName) {
+static int createExternalOutputFile(char *fileName) {
     FILE *file;
     void *iterator;
     ExternUsage externUsage;
@@ -97,5 +115,15 @@ int createExternalOutputFile(char *fileName) {
         getExternUsageNext(&iterator, &externUsage);
     }
     fclose(file);
+    return 0;
+}
+
+/*************************
+ *  Write output
+ */
+int writeOutputFiles(char *basefilename) {
+    createCodeOutputFile(basefilename);
+    createEntryOutputFile(basefilename);
+    createExternalOutputFile(basefilename);
     return 0;
 }

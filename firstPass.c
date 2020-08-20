@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "firstPass.h"
-#include "constants.h"
 #include "dissector.h"
 #include "state.h"
 #include "symbolTable.h"
@@ -63,4 +62,28 @@ int firstPass(char *fileName) {
                 break;
         }
     }
+}
+
+int handleCmdLabelFirstPass(DissectedLine dissectedLine) {
+    if (addSymbol(dissectedLine.label, getState()->IC, ST_CODE, FALSE) != 0) {
+        return -1;
+    }
+    return 0;
+}
+
+int handleDirectiveLabelFirstPass(DissectedLine dissectedLine, DissectedDirective dissectedDirective) {
+    enum bool isEntry = FALSE;
+    /* Any label before .entry/.extern is ignored. We issue a warning to the user. */
+    if ((dissectedDirective.type == DT_ENTRY) || (dissectedDirective.type == DT_EXTERN)) {
+        if (strlen(dissectedLine.label) > 0) {
+            printf("%d: Warning: There is a label before %s - it will be ignored\n", getLineNumber(),
+                   (dissectedDirective.type == DT_ENTRY) ? ".entry" : ".extern");
+        }
+        return 0;
+    }
+
+    if (addSymbol(dissectedLine.label, getState()->DC, ST_DATA, isEntry) != 0) {
+        return -1;
+    }
+    return 0;
 }

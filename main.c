@@ -1,11 +1,13 @@
 #include <string.h>
 #include <stdio.h>
 #include "errorLog.h"
-#include "main.h"
 #include "symbolTable.h"
 #include "externUsage.h"
 #include "firstPass.h"
 #include "secondPass.h"
+#include "outfile.h"
+
+static int processAssemblyFile(char *basefileName);
 
 int main(int argc, char **argv) {
     int i;
