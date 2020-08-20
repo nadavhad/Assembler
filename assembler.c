@@ -14,13 +14,19 @@ static int verifyArguments(Operation *op, CommandTokens *commandTokens);
 
 static int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, int *opcodeLen);
 
+/*
+ * Builds a struct containing the values of an argument data "word"
+ * @return 2 if an argument doesn't need a data byte, 0 on success, and -1 on failure.
+ */
+static int buildDataByte(Argument arg, int databyteOffset, EncodedArg *databyte);
+
 static int matchesAddressing(int validAddressingArr[5], char *arg, Argument *argData);
 
-/**
+/*
  * Flatten directory structure.
  * Make should work by just typing 'make'
  * Document
- *   Y  assembler
+ * i Y  assembler
  *   N  constants.h
  *   N  dissector
  *   Y  errorlog
@@ -40,28 +46,28 @@ int handleCommand(DissectedLine dissectedLine) {
     Operation command;
     char encodedOpcode[9];
     int opcodeLen;
+    /* split the command string into command + args tokens */
     if (dissectCommand(dissectedLine.command, &commandTokens) != 0) {
         return -1;
     }
+    /* find out what command this is */
     if (findOperation(commandTokens.command, &command) != 0) {
         return -1;
     }
+    /* assert that the args fit the command */
     if (verifyArguments(&command, &commandTokens) != 0) {
         return -1;
     }
-
+    /* translate the command into machine code */
     if (encodeCommand(&command, commandTokens, encodedOpcode, &opcodeLen) != 0) {
         return -1;
     }
-
+    /* save the machine code */
     addCommand(encodedOpcode, opcodeLen);
-
     return 0;
 }
 
-/**
- * Returns 2 if an argument doesn't need a data byte, 0 on success, and -1 on failure.
- */
+
 static int buildDataByte(Argument arg, int databyteOffset, EncodedArg *databyte) {
     SymbolData symbolData;
     memset(databyte, 0, sizeof(*databyte));
@@ -121,6 +127,7 @@ static int encodeCommand(Operation *command, CommandTokens args, char *encodedOp
     EncodedArg arg[2];
     int numArgs = 0;
     int retVal;
+    /* TODO: magic number */
     memset(encodedOpcode, 0, 9);
     memset(&operation, 0, sizeof(operation));
     memset(&arg[0], 0, sizeof(arg[0]));
@@ -148,7 +155,7 @@ static int encodeCommand(Operation *command, CommandTokens args, char *encodedOp
         } else if (retVal == 2) {
             numArgs = 0;
         }
-    } else if (args.numArgs == 2) {/* if we have two args, then */
+    } else if (args.numArgs == 2) {/* if we have two args, then first is src and second is dest*/
         numArgs = 2;
         operation.srcRegister = args.arg1Data.reg;
         operation.srcAddressing = args.arg1Data.addressing;
@@ -185,16 +192,21 @@ static int encodeCommand(Operation *command, CommandTokens args, char *encodedOp
 }
 
 static int verifyArguments(Operation *op, CommandTokens *commandTokens) {
+    /* make sure we have the correct amount of arguments */
     if (commandTokens->numArgs != op->numArgs) {
         ERROR_RET((_, "Wrong number of arguments for %s. Expected: %d Got: %d",
                 op->name, op->numArgs, commandTokens->numArgs));
     }
+    /* TODO: flatten `if`s? */
+    /* */
     if (op->numArgs > 0) {
         if (op->srcAddressing[0] == AT_UNSET) {
+            /* if the command has no src arg, then the first (and only) arg is dest */
             if (matchesAddressing(op->destAddressing, commandTokens->arg1, &commandTokens->arg1Data) != 0) {
                 return -1;
             }
         } else {
+            /* if the command has a src arg, then the first arg is src */
             if (matchesAddressing(op->srcAddressing, commandTokens->arg1, &commandTokens->arg1Data) != 0) {
                 return -1;
             }
@@ -226,14 +238,13 @@ static int matchesAddressing(int validAddressingArr[5], char *arg, Argument *arg
  *  Directives
  */
 int handleDirective(DissectedDirective dissectedDirective) {
-    /* Handle .entry, .extern */
+    /* In entry, extern we reference a symbol - validate the symbol */
     if ((dissectedDirective.type == DT_ENTRY) || (dissectedDirective.type == DT_EXTERN)) {
         if (validateLabel(dissectedDirective.directiveArgs) != 0) {
             return -1;
         }
     }
 
-    /* TODO: Why not switch/case? */
     if (dissectedDirective.type == DT_ENTRY) {
         return 0;
     }

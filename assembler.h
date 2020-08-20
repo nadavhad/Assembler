@@ -5,6 +5,9 @@
 
 int handleDirective(DissectedDirective dissectedDirective);
 
+/**
+ * Handle command code all the way to building and saving machine code
+ */
 int handleCommand(DissectedLine dissectedLine);
 
 /**
