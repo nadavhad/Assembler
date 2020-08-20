@@ -10,38 +10,15 @@
 #include "externUsage.h"
 #include "dissector.h"
 
-static int buildDataByte(Argument arg, int databyteOffset, EncodedArg *databyte);
+static int verifyArguments(Operation *op, CommandTokens *commandTokens);
 
 static int encodeCommand(Operation *command, CommandTokens args, char *encodedOpcode, int *opcodeLen);
-
-static int verifyArguments(Operation *op, CommandTokens *commandTokens);
 
 static int matchesAddressing(int validAddressingArr[5], char *arg, Argument *argData);
 
 /**
  * Flatten directory structure.
  * Make should work by just typing 'make'
- * Reorganize code
- *   parsing h + c
- *      All parsing code
- *   assembler
- *      All code common to first and second pass
- *   firstPass
- *      All code rlated only to first pass
- *   secondPass
- *      All code related only to second pass
- *   Remove structs.h Move structs to appropriate module (h files)
- * Leave
- *   dissector
- *
- *   main
- *      main
- *      proceesAssembllyFile
- *      writeOutputFiles
- *   errorlog -> rename to errorLog
- *   symbolTable
- *   exterusage -> rename to externUsage
- *   state
  * Document
  *   Y  assembler
  *   N  constants.h
@@ -255,6 +232,8 @@ int handleDirective(DissectedDirective dissectedDirective) {
             return -1;
         }
     }
+
+    /* TODO: Why not switch/case? */
     if (dissectedDirective.type == DT_ENTRY) {
         return 0;
     }
@@ -324,7 +303,6 @@ int handleDirective(DissectedDirective dissectedDirective) {
         /* TODO: empty .data : warning? */
         return 0;
     }
-/* invalid DirectiveType */
+    /* invalid DirectiveType */
     ERROR_RET((_, "Unexpected value: "));
-
 }
