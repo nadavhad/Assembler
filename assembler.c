@@ -22,6 +22,8 @@ static int buildDataByte(Argument arg, int databyteOffset, EncodedArg *databyte)
 
 static int matchesAddressing(int validAddressingArr[5], char *arg, Argument *argData);
 
+static int handleDataDirective(DissectedDirective *dissectedDirective);
+
 /*
  * Flatten directory structure.
  * Make should work by just typing 'make'
@@ -279,41 +281,47 @@ int handleDirective(DissectedDirective dissectedDirective) {
     }
 
     if (dissectedDirective.type == DT_DATA) {
-        char strippedBuf[MAX_LINE_LENGTH];
-        char *stripped = strippedBuf;
-        long number;
-        stripWhiteSpaces(dissectedDirective.directiveArgs, stripped);
-        while (stripped[0] != 0) {
-            char iteratorBuf[MAX_LINE_LENGTH];
-            char *iterator = iteratorBuf;
-            strcpy(iteratorBuf, stripped);
-            number = strtol(iterator, &iterator, 10);
-            /*Check that the number we got can fit into 24 bits (the size of a "word")*/
-            if ((number > MAX_24_BIT_WORD) || (number < MIN_24_BIT_WORD)) {
-                ERROR_RET((_, "Number %ld out of range", number))
-            }
-            if (iterator == iteratorBuf) {
-                ERROR_RET((_, "Entries in \".data\" must be comma separated integer numbers. Got <%s>", stripped));
-            }
-            addDataWord(number);
-            stripWhiteSpaces(iterator, stripped);
-            if (stripped[0] == ',') {
-                stripped++;
-                if (*stripped == 0) {
-                    ERROR_RET((_, "Missing data after comma."));
-                }
-                continue;
-            } else if (stripped[0] == 0) {
-                /* finished data parsing */
-                return 0;
-            } else {
-                /* error - expected end or ','. */
-                ERROR_RET((_, "Expected ',', got unexpected characters: <%s>", stripped))
-            }
-        }
-        /* TODO: empty .data : warning? */
-        return 0;
+        return handleDataDirective(&dissectedDirective);
     }
     /* invalid DirectiveType */
     ERROR_RET((_, "Unexpected value: "));
+}
+
+static int handleDataDirective(DissectedDirective *dissectedDirective) {
+    char strippedBuf[MAX_LINE_LENGTH];
+    char *stripped = strippedBuf;
+    long number;
+    stripWhiteSpaces((*dissectedDirective).directiveArgs, stripped);
+    if (stripped[0] == 0) {
+        ERROR_RET((_, "Empty .data directive"));
+    }
+    while (stripped[0] != 0) {
+        char iteratorBuf[MAX_LINE_LENGTH];
+        char *iterator = iteratorBuf;
+        strcpy(iteratorBuf, stripped);
+        number = strtol(iterator, &iterator, 10);
+        /*Check that the number we got can fit into 24 bits (the size of a "word")*/
+        if ((number > MAX_24_BIT_WORD) || (number < MIN_24_BIT_WORD)) {
+            ERROR_RET((_, "Number %ld out of range", number))
+        }
+        if (iterator == iteratorBuf) {
+            ERROR_RET((_, "Entries in \".data\" must be comma separated integer numbers. Got <%s>", stripped));
+        }
+        addDataWord(number);
+        stripWhiteSpaces(iterator, stripped);
+        if (stripped[0] == ',') {
+            stripped++;
+            if (*stripped == 0) {
+                ERROR_RET((_, "Missing data after comma."));
+            }
+            continue;
+        } else if (stripped[0] == 0) {
+            /* finished data parsing */
+            return 0;
+        } else {
+            /* error - expected end or ','. */
+            ERROR_RET((_, "Expected ',', got unexpected characters: <%s>", stripped))
+        }
+    }
+    return 0;
 }
