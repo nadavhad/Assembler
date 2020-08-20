@@ -50,6 +50,9 @@ int addSymbol(char name[MAX_LABEL_LENGTH], int value, SymbolType type, enum bool
 struct Node *lookUpNode(char name[MAX_LABEL_LENGTH], struct Node **lastNode) {
     struct Node *iterator = NULL;
     iterator = _head;
+    if (iterator == NULL) {
+        return NULL;
+    }
     do {
         if (strcmp(iterator->data.name, name) == 0) {
             return iterator;
