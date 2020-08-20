@@ -1,5 +1,5 @@
 SRCS = assembler.c state.c firstPass.c secondPass.c parsing.c externUsage.c symbolTable.c outfile.c errorLog.c dissector.c
-HDRS = assembler.h state.h firstPass.h secondPass.h parsing.h externusage.h symbolTable.h outfile.h errorLog.h types.h constants.h
+HDRS = assembler.h state.h firstPass.h secondPass.h parsing.h externUsage.h symbolTable.h outfile.h errorLog.h types.h constants.h
 
 assembler: ${SRCS} ${HDRS}
 	gcc -g  -Wall -ansi -pedantic ${SRCS} main.c -o assembler
