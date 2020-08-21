@@ -49,7 +49,7 @@ static int verifyArguments(Operation *op, CommandTokens *commandTokens);
  *   N  main.c
  * d Y  outfile
  * d -  parsing
- *   Y  secondpass
+ * d Y  secondpass
  *   N  state
  *   N  symboltable
  * d -  types.h
@@ -81,6 +81,55 @@ int handleCommand(DissectedLine dissectedLine) {
     return 0;
 }
 
+int handleDirective(DissectedDirective dissectedDirective) {
+    /* In entry, extern we reference a symbol - validate the symbol */
+    if ((dissectedDirective.type == DT_ENTRY) || (dissectedDirective.type == DT_EXTERN)) {
+        if (validateLabel(dissectedDirective.directiveArgs) != 0) {
+            return -1;
+        }
+    }
+    /* ".entry" handling is minimal and is done in a different part of the proccessing */
+    if (dissectedDirective.type == DT_ENTRY) {
+        return 0;
+    }
+    /* log the symbol ".extern" imported */
+    if (dissectedDirective.type == DT_EXTERN) {
+        addSymbol(dissectedDirective.directiveArgs, 0, ST_EXTERNAL, FALSE);
+        return 0;
+    }
+    /* parse ".string" directives */
+    if (dissectedDirective.type == DT_STRING) {
+        char strippedBuf[MAX_LINE_LENGTH];
+        char *stripped = strippedBuf;
+        stripWhiteSpaces(dissectedDirective.directiveArgs, stripped);
+        if (stripped[0] != '\"') {
+            /* if the first character after stripping isn't ", */
+            /* then there either isn't one */
+            /* or there are chars before it. */
+            ERROR_RET((_, "Cannot find starting \'\"\'"));
+        }
+        if (stripped[strlen(stripped) - 1] != '\"') {
+            /* if the last character after stripping isn't ", this is an error. */
+            ERROR_RET((_, "Cannot find closing \'\"\'"));
+        }
+
+        stripped++; /* skip the first quote */
+        while (*stripped != '\"') {
+            /* until we reach the end quote */
+            addDataWord(*stripped);
+            stripped++;
+        }
+        /* add terminating zero */
+        addDataWord(0);
+        return 0;
+    }
+    /* ".data" handling is more complicated, so delegate to a specific function */
+    if (dissectedDirective.type == DT_DATA) {
+        return handleDataDirective(&dissectedDirective);
+    }
+    /* invalid DirectiveType */
+    ERROR_RET((_, "Unexpected value: "));
+}
 
 static int buildDataByte(Argument arg, int databyteOffset, EncodedArg *databyte) {
     SymbolData symbolData;
@@ -269,56 +318,6 @@ static int matchesAddressing(int validAddressingArr[5], char *arg, Argument *arg
         }
     }
     ERROR_RET((_, "Invalid addressing type: %s (%s)", addressingTypeStr(argData->addressing), arg));
-}
-
-int handleDirective(DissectedDirective dissectedDirective) {
-    /* In entry, extern we reference a symbol - validate the symbol */
-    if ((dissectedDirective.type == DT_ENTRY) || (dissectedDirective.type == DT_EXTERN)) {
-        if (validateLabel(dissectedDirective.directiveArgs) != 0) {
-            return -1;
-        }
-    }
-    /* ".entry" handling is minimal and is done in a different part of the proccessing */
-    if (dissectedDirective.type == DT_ENTRY) {
-        return 0;
-    }
-    /* log the symbol ".extern" imported */
-    if (dissectedDirective.type == DT_EXTERN) {
-        addSymbol(dissectedDirective.directiveArgs, 0, ST_EXTERNAL, FALSE);
-        return 0;
-    }
-    /* parse ".string" directives */
-    if (dissectedDirective.type == DT_STRING) {
-        char strippedBuf[MAX_LINE_LENGTH];
-        char *stripped = strippedBuf;
-        stripWhiteSpaces(dissectedDirective.directiveArgs, stripped);
-        if (stripped[0] != '\"') {
-            /* if the first character after stripping isn't ", */
-            /* then there either isn't one */
-            /* or there are chars before it. */
-            ERROR_RET((_, "Cannot find starting \'\"\'"));
-        }
-        if (stripped[strlen(stripped) - 1] != '\"') {
-            /* if the last character after stripping isn't ", this is an error. */
-            ERROR_RET((_, "Cannot find closing \'\"\'"));
-        }
-
-        stripped++; /* skip the first quote */
-        while (*stripped != '\"') {
-            /* until we reach the end quote */
-            addDataWord(*stripped);
-            stripped++;
-        }
-        /* add terminating zero */
-        addDataWord(0);
-        return 0;
-    }
-    /* ".data" handling is more complicated, so delegate to a specific function */
-    if (dissectedDirective.type == DT_DATA) {
-        return handleDataDirective(&dissectedDirective);
-    }
-    /* invalid DirectiveType */
-    ERROR_RET((_, "Unexpected value: "));
 }
 
 static int handleDataDirective(DissectedDirective *dissectedDirective) {

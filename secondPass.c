@@ -11,11 +11,13 @@ int secondPass(char *fileName) {
     char line[MAX_LINE_LENGTH];
     DissectedLine dissectedLine;
     DissectedDirective dissectedDirective;
+    /* open the file and make sure we succeeded to */
     file = fopen(fileName, "r");
     if (file == NULL) {
         perror("Could not open input file: ");
         return -1;
     }
+    /* reinitialize file-iteration state */
     getState()->lineNumber = 0;
     getState()->IC = 100;
     getState()->DC = 0;
@@ -32,21 +34,23 @@ int secondPass(char *fileName) {
         }
 
         switch (dissectedLine.lineType) {
-            /* ignore empty line or comment */
             case LT_COMMENT:
+                /* ignore empty line or comment */
                 break;
-                /* handle commands */
             case LT_COMMAND:
+                /* handle commands */
                 handleCommand(dissectedLine);
                 break;
-                /* handle directives */
             case LT_DIRECTIVE:
+                /* figure out what directive this is */
                 if (getDirectiveType(dissectedLine, &dissectedDirective) == -1) {
                     break;
                 }
+                /* if it's not an entry, we handled it in the first pass */
                 if (dissectedDirective.type != DT_ENTRY) {
                     break;
                 }
+                /* mark that the referenced symbol is an entry */
                 if (setEntrySymbol(dissectedDirective.directiveArgs) == -1) {
                     break;
                 }
