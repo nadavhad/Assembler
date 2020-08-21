@@ -44,7 +44,7 @@ static int verifyArguments(Operation *op, CommandTokens *commandTokens);
  * d N  constants.h
  *   N  dissector
  * d Y  errorlog
- *   Y  externusage
+ * d Y  externusage
  *   N  firstpass
  *   N  main.c
  *   Y  outfile
