@@ -22,7 +22,9 @@ static struct Node *_head = NULL;
 
 
 struct Node *initNode(char label[MAX_LABEL_LENGTH], int usage) {
+    /* allocate Node data */
     struct Node *node = (struct Node *) malloc(sizeof(struct Node));
+    /* assign usage data */
     node->next = NULL;
     strcpy(node->data.externLabel, label);
     node->data.usageAddress = usage;
