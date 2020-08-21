@@ -7,38 +7,55 @@
 #include "state.h"
 #include "errorLog.h"
 
+/**
+ * Split the input to the command and the parameters. Also removes redundant white spaces.
+ * @return 0 on success, -1 on failure
+ * */
 static int splitCommandAndParams(char *line, char *token, char *remainder);
 
+/**
+ * Tokenize the remainder string into (up to) MAX_PARAMS comma separated strings.
+* */
+int tokenizeParams(char *remainder, CommandTokens *parsedCommand);
+
+/**
+ * Finds the addressing type of the argument, and checks its validity.
+ * @return addressing type (0..3), or -1 on error/mismatch
+ */
 int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
     char *endptr;
     argument->addressing = AT_UNSET;
     argument->reg = 0;
     argument->value.scalar = 0;
     if ((raw_arg[0] == 'r') && (strlen(raw_arg) == 2) && (raw_arg[1] >= '0') && (raw_arg[1] <= '7')) {
+        /* The argument is a register */
         argument->addressing = AT_REGISTER;
         argument->reg = raw_arg[1] - '0';
         return 0;
     } else if (raw_arg[0] == '#') {
+        /* Immediate addressing type */
         argument->value.scalar = strtol((raw_arg + 1), &endptr, 10);
-        /*Check that the number we got can fit into 21 bits (the size of a "word" excluding A R E bits)*/
+        /* Check that the number we got can fit into 21 bits (the size of a "word" excluding A R E bits) */
         if ((argument->value.scalar > MAX_21_BIT_WORD) || (argument->value.scalar < MIN_21_BIT_WORD)) {
             ERROR_RET((_, "Number %ld out of range", argument->value.scalar))
         }
+        /* Check that strtol could find a number and that there is nothing left */
         if ((endptr == (raw_arg + 1)) || (*endptr != 0)) {
             ERROR_RET((_, "Argument addressed with # must be a number, not: %s", raw_arg));
         }
-
         argument->addressing = AT_IMMEDIATE;
         return 0;
     } else if (raw_arg[0] == '&') {
+        /* Relative addressing typ e*/
         argument->addressing = AT_RELATIVE;
         strcpy(argument->value.symbol, &raw_arg[1]);
+        /* Check that the label is valid*/
         if (validateLabel(argument->value.symbol) == -1) {
             return -1;
         }
         return 0;
     }
-
+    /* Check that the label is valid*/
     if (validateLabel(raw_arg) == -1) {
         return -1;
     }
@@ -48,6 +65,13 @@ int findArgumentAddressingType(const char *raw_arg, Argument *argument) {
     return 0;
 }
 
+/**
+ * Splits a line of assembly code into a struct containing the label and command (with its args)
+ * and also identifies the coarse line type.
+ * rawLine - Input line
+ * dissectedLine - the dissected input line
+ * @return 0 on success, -1 on failure.
+ */
 int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
     char accumulator[MAX_LINE_LENGTH];
     char *iterator = rawLine;
@@ -87,14 +111,15 @@ int dissectLabel(char *rawLine, DissectedLine *dissectedLine) {
         index++;
         iterator++;
     }
+    /* Strip from white spaces */
     stripWhiteSpaces(accumulator, dissectedLine->command);
+    /* A label is followed by an empty line is Illegal s*/
     if ((strlen(dissectedLine->label) > 0) && strlen(dissectedLine->command) == 0) {
         ERROR_RET((_, "Label followed by an empty line is illegal"));
     }
-
     if (dissectedLine->command[0] == '.') {
         dissectedLine->lineType = LT_DIRECTIVE;
-    } else {
+    } else { /* The line type is a command */
         dissectedLine->lineType = LT_COMMAND;
     }
     return 0;
@@ -133,6 +158,10 @@ static char directives[4][7] = {
         "string",
 };
 
+/**
+ * Validate that the argument is a valid label (no reserved words, alphanumric characters, etc.)
+ * @return 0 if it is valid, 1 otherwise.
+ */
 int validateLabel(const char *label) {
     int i;
     char *iter;
@@ -176,8 +205,13 @@ int validateLabel(const char *label) {
     return 0;
 }
 
+/**
+ * Finds what operation it is, fills the Operation struct with relevant data.
+ * @return 0 on success, -1 on failure
+ */
 int findOperation(char *cmd, Operation *op) {
     int i;
+    /* Looking for the command in the operation table */
     for (i = 0; i < NUM_OPERATIONS; i++) {
         if (strcmp(cmd, ops[i].name) == 0) {
             (*op) = ops[i];
@@ -188,6 +222,10 @@ int findOperation(char *cmd, Operation *op) {
     ERROR_RET((_, "Undefined operation: %s", cmd));
 }
 
+/**
+ * Tokenize the line into: directive and directive arguments, and Find the directive type.
+ * @return 0 on success, -1 on failure.
+* */
 int getDirectiveType(DissectedLine dissectedLine, DissectedDirective *directive) {
     int index = 0;
     char *iterator = dissectedLine.command;
@@ -218,7 +256,10 @@ int getDirectiveType(DissectedLine dissectedLine, DissectedDirective *directive)
     return 0;
 }
 
-/* Split the input to the command and the parameters. Also removes redundant white spaces. */
+/**
+ * Split the input to the command and the parameters. Also removes redundant white spaces.
+ * @return 0 on success, -1 on failure
+ * */
 static int splitCommandAndParams(char *line, char *token, char *remainder) {
     char parts[MAX_TOKENS + 1][MAX_LINE_LENGTH];
     int i;
@@ -252,6 +293,9 @@ static int splitCommandAndParams(char *line, char *token, char *remainder) {
     return 0;
 }
 
+/**
+ * Tokenize the remainder string into (up to) MAX_PARAMS comma separated strings.
+* */
 int tokenizeParams(char *remainder, CommandTokens *parsedCommand) {
     int charIndex = 0;
     char *currArg;
@@ -299,6 +343,10 @@ int tokenizeParams(char *remainder, CommandTokens *parsedCommand) {
     return 0;
 }
 
+/**
+ * Splits a command string into a command and its arguments
+ * @return 0 on success, -1 on failure
+ */
 int dissectCommand(char *commandStr, CommandTokens *parsedCommand) {
     /* 1. Check command structure (tokens, command, number of arguments)
      * 2. Split line to tokens: CommandTokens, argument1, argument2
@@ -308,7 +356,8 @@ int dissectCommand(char *commandStr, CommandTokens *parsedCommand) {
         /* There was an error in the input */
         return -1;
     }
-    if (tokenizeParams(remainder, parsedCommand) < 0) { /* There was an error in the input */
+    if (tokenizeParams(remainder, parsedCommand) < 0) {
+        /* There was an error in the input */
         return -1;
     }
     return 0;

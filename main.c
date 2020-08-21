@@ -7,12 +7,19 @@
 #include "secondPass.h"
 #include "outfile.h"
 
+/**
+ * Processes the .as file. if there are errors - print them and stop, else - create the output files.
+ * */
 static int processAssemblyFile(char *basefileName);
 
+/* TODO */
 int main(int argc, char **argv) {
     int i;
+    /* For each file */
     for (i = 1; i < argc; ++i) {
+        /* Process the file */
         processAssemblyFile(argv[i]);
+        /* Clear all of the Lists for the next file */
         clearExternUsagesTable();
         clearSymbolTable();
         clearErrorLog();
@@ -21,6 +28,12 @@ int main(int argc, char **argv) {
     return 0;
 }
 
+/** Process the assembly file:
+ * 1. first pass - if there are errors print them and stop (or move to next file if exists)
+ * 2. second pass - if there are errors print them and stop (or move to next file if exists)
+ * 3.create the output files (.ob, .ent, .ext)
+ * @return 0 on success, -1 on failure
+ * */
 int processAssemblyFile(char *basefileName) {
     char assemblyFileName[80];
     strcpy(assemblyFileName, basefileName);

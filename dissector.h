@@ -107,6 +107,10 @@ int findArgumentAddressingType(const char *, Argument *);
  */
 int validateLabel(const char *label);
 
+/**
+ * Tokenize the line into: directive and directive arguments, and Find the directive type.
+ * @return 0 on success, -1 on failure.
+* */
 int getDirectiveType(DissectedLine dissectedLine, DissectedDirective *directive);
 
 #define ENTRY ".entry"

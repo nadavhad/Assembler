@@ -1,6 +1,9 @@
 #ifndef SHAREDFOLDER_STATE_H
 #define SHAREDFOLDER_STATE_H
 
+/**
+ * TODO:A struct holding the state of the code
+ */
 typedef struct {
     int lineNumber;
     int IC;
@@ -10,19 +13,22 @@ typedef struct {
     char currentByteCode[8192];
     char dataByteCode[4096];
 } State;
+
 /**
  * Initialize the global state container for an assembly file
  */
 void initializeState();
+
 /**
  * Get a ptr to the global state container
- * @return
+ * @return a ptr to the global state container
  */
 State *getState();
 /**
  * Get the current line number in the assembly file
  */
 int getLineNumber();
+
 /**
  * Increment the stored line number.
  * (Advance to the next line in the assembly file)
@@ -30,7 +36,7 @@ int getLineNumber();
 void incLineNumber();
 
 /**
- * Add a command and increment IC accortdingly.
+ * Add a command and increment IC accordingly.
  */
 void addCommand(const char *encodedOpcode, int opcodeLen);
 

@@ -13,6 +13,7 @@ int firstPass(char *fileName) {
     char line[MAX_LINE_LENGTH + 5];
     DissectedLine dissectedLine;
     DissectedDirective dissectedDirective;
+    /* Opening the file*/
     file = fopen(fileName, "r");
     /* if we can't open the file, no point in continuing */
     if (file == NULL) {
@@ -22,6 +23,7 @@ int firstPass(char *fileName) {
 
     initializeState();
     while (1) {
+        /* Read a line */
         if (fgets(line, MAX_LINE_LENGTH + 5, file) == NULL) {
             /* We got to the end of a file: close file, log IC and DC values */
             fclose(file);
@@ -64,6 +66,7 @@ int firstPass(char *fileName) {
     }
 }
 
+/**/
 int handleCmdLabelFirstPass(DissectedLine dissectedLine) {
     if (addSymbol(dissectedLine.label, getState()->IC, ST_CODE, FALSE) != 0) {
         return -1;
@@ -71,6 +74,7 @@ int handleCmdLabelFirstPass(DissectedLine dissectedLine) {
     return 0;
 }
 
+/* */
 int handleDirectiveLabelFirstPass(DissectedLine dissectedLine, DissectedDirective dissectedDirective) {
     enum bool isEntry = FALSE;
     /* Any label before .entry/.extern is ignored. We issue a warning to the user. */
@@ -81,7 +85,7 @@ int handleDirectiveLabelFirstPass(DissectedLine dissectedLine, DissectedDirectiv
         }
         return 0;
     }
-
+    /* The directive is either .string or .data - add to symbol table */
     if (addSymbol(dissectedLine.label, getState()->DC, ST_DATA, isEntry) != 0) {
         return -1;
     }
