@@ -109,6 +109,10 @@ int setEntrySymbol(char *label) {
         /* tried to mark a non-existant symbol as entry */
         ERROR_RET((_, "Label not found: %s", label));
     }
+    /* Make sure this symbol was not defined as extern */
+    if (iterator->data.type == ST_EXTERNAL) {
+        ERROR_RET((_, "Symbol <%s> already designated as extern. Can't be defined as entry.", label));
+    }
     /* mark symbol as entry */
     iterator->data.isEntry = TRUE;
     return 0;

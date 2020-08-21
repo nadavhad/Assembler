@@ -176,12 +176,13 @@ int validateLabel(const char *label) {
      *  c. not directive
      * 5. All characters are alphanumeric
      */
+    if (label[0] == 0) ERROR_RET((_, "Illegal empty label"));
     if (!(isalpha(label[0]))) ERROR_RET((_, "Illegal label, labels must start with a letter. Label: %s", label));
 
     if (strlen(label) > MAX_LABEL_LENGTH) ERROR_RET(
             (_, "Illegal label, max label length is 31 characters. Label: %s", label));
 
-    if ((strlen(label) == 3)
+    if ((strlen(label) == 2)
         && (label[0] == 'r')
         && ((label[1] >= '0') && (label[1] <= '7'))) ERROR_RET((_,
             "Illegal label, label cannot be a register name. Label: %s", label));
