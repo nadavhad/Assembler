@@ -38,6 +38,7 @@ static int writeLine(FILE *outfile, int address, long data);
  */
 static FILE *openOutFile(const char *basefilename, const char *extension, char *outFileName);
 
+
 static int writeLine(FILE *outfile, int address, long data) {
     fprintf(outfile, "%07d %06lx\n", address, data);
     return 0;
@@ -91,7 +92,7 @@ static int createEntryOutputFile(char *fileName) {
     void *iterator;
     SymbolData symbolData;
     char buf[MAX_FILE_NAME];
-    /* get initial iteratior */
+    /* get initial iterator */
     startSymbolTableIteration(&iterator, &symbolData);
     /* if the list is empty, don't create a file */
     if (iterator == NULL) {

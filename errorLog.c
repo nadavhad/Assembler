@@ -13,7 +13,7 @@ struct Node {
 };
 
 /**
- * Print to stderr
+ * Print the errors to stderr
  */
 static void errorLog(const char *string);
 
@@ -27,6 +27,9 @@ static struct Node *createNode(const char *string);
  */
 static struct Node *_head = NULL;
 
+/**
+ * Create a new Node containing the given string
+ */
 static struct Node *createNode(const char *string) {
     struct Node *node;
     node = (struct Node *) malloc(sizeof(struct Node));
@@ -35,6 +38,11 @@ static struct Node *createNode(const char *string) {
     return node;
 }
 
+/**
+ * Log an error to the error list
+ * @param lineNumber the line number in the assembly file
+ * @param errorStr the string that describes the error
+ */
 void logError(int lineNumber, char *errorStr) {
     char errorWithLine[MAX_ERROR_LENGTH + 10];
     struct Node *added;
@@ -56,10 +64,17 @@ void logError(int lineNumber, char *errorStr) {
     iterator->next = added;
 }
 
+/**
+ * Print the errors to stderr
+ */
 static void errorLog(const char *string) {
     fprintf(stderr, "%s\n", string);
 }
 
+/**
+ * Check how many errors were logged
+ * @return the number of errors
+ */
 int numErrors() {
     struct Node *node = _head;
     int counter = 0;
@@ -70,7 +85,9 @@ int numErrors() {
     }
     return counter;
 }
-
+/**
+ * Print all logged errors to stderr
+ */
 void flush() {
     struct Node *node = _head;
     while (node != NULL) {
@@ -79,7 +96,9 @@ void flush() {
         node = node->next;
     }
 }
-
+/**
+ * Clears the error log
+ * */
 void clearErrorLog() {
     struct Node *iterator = _head;
     /* free the list */
@@ -91,6 +110,10 @@ void clearErrorLog() {
     _head = NULL;
 }
 
+
+/**
+ * Converts an AddressingType value to a string value for printing
+ */
 char *addressingTypeStr(enum AddressingType addressingType) {
     static char buf[10];
     /* return a string with the given addressing type */

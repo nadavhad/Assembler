@@ -5,7 +5,7 @@
 #include "types.h"
 
 /**
- * Log an error
+ * Log an error to the error list
  * @param lineNumber the line number in the assembly file
  * @param errorStr
  */
@@ -22,6 +22,9 @@ void flush();
  */
 int numErrors();
 
+/**
+ * Clears the error log
+ * */
 void clearErrorLog();
 
 /**

@@ -28,6 +28,9 @@ struct Node *lookUpNode(char name[MAX_LABEL_LENGTH], struct Node **lastNode);
  */
 static struct Node *_head = NULL;
 
+/**
+ * Create a new Node with symbol data
+ */
 struct Node *createNode(char name[MAX_LABEL_LENGTH], int value, LineType type, enum bool isEntry) {
     /* allocate Node data */
     struct Node *node = (struct Node *) malloc(sizeof(struct Node));
@@ -40,6 +43,9 @@ struct Node *createNode(char name[MAX_LABEL_LENGTH], int value, LineType type, e
     return node;
 }
 
+/**
+ * Add a symbol to the symbol table
+ */
 int addSymbol(char name[MAX_LABEL_LENGTH], int value, SymbolType type, enum bool isEntry) {
     struct Node *lastNode;
     struct Node *existingNode;
@@ -67,6 +73,10 @@ int addSymbol(char name[MAX_LABEL_LENGTH], int value, SymbolType type, enum bool
     return 0;
 }
 
+/**
+ * Finds the Node with the symbol name.
+ * If no matching Node is found, returns NULL and lastNode is the last Node in the list.
+ */
 struct Node *lookUpNode(char name[MAX_LABEL_LENGTH], struct Node **lastNode) {
     struct Node *iterator = NULL;
     iterator = _head;
@@ -88,7 +98,9 @@ struct Node *lookUpNode(char name[MAX_LABEL_LENGTH], struct Node **lastNode) {
     *lastNode = iterator;
     return NULL;
 }
-
+/**
+ * Look up a symbol in the symbol table
+ */
 int lookUp(char name[MAX_LABEL_LENGTH], SymbolData *symbolData) {
     struct Node *lastNode;
     struct Node *node = lookUpNode(name, &lastNode);
@@ -100,7 +112,9 @@ int lookUp(char name[MAX_LABEL_LENGTH], SymbolData *symbolData) {
     memcpy(symbolData, &node->data, sizeof(SymbolData));
     return 0;
 }
-
+/**
+ * Mark a symbol as an entry
+ */
 int setEntrySymbol(char *label) {
     struct Node *lastNode;
     /* find symbol */
@@ -117,7 +131,9 @@ int setEntrySymbol(char *label) {
     iterator->data.isEntry = TRUE;
     return 0;
 }
-
+/**
+ * Offsets all data symbols a certain amount (ICF)
+ */
 int incrementDataSymbolsOffset(int icf) {
     struct Node *iterator = _head;
     while (iterator != NULL) {
@@ -129,7 +145,9 @@ int incrementDataSymbolsOffset(int icf) {
     }
     return 0;
 }
-
+/**
+ * Empty the symbol recordings
+ */
 void clearSymbolTable() {
     struct Node *iterator = _head;
     /* free the list */
@@ -141,11 +159,17 @@ void clearSymbolTable() {
     _head = NULL;
 }
 
+/**
+ * Checks if the we have all symbol table data, and data is accurate.
+ */
 enum bool isSymbolTableComplete() {
     /* if ICF or DCF are initialized, then we have all symbol data */
     return (getState()->ICF >= 0) || (getState()->DCF >= 0);
 }
 
+/**
+ * Expose the first Node for iteration purposes
+ */
 int startSymbolTableIteration(void **iterator, SymbolData *data) {
     *iterator = _head;
     if (*iterator != NULL) {
@@ -153,7 +177,9 @@ int startSymbolTableIteration(void **iterator, SymbolData *data) {
     }
     return 0;
 }
-
+/**
+ * Expose the next Node for iteration purposes
+ */
 int getSymbolTableNext(void **iterator, SymbolData *data) {
     *iterator = ((struct Node *) *iterator)->next;
     if (*iterator != NULL) {

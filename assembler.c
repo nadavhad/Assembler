@@ -203,7 +203,6 @@ static int encodeCommand(Operation *command, CommandTokens args, char *encodedOp
     EncodedArg arg[2];
     int numArgs = 0;
     int retVal;
-    /* TODO: magic number */
     memset(encodedOpcode, 0, 3 * WORD_SIZE_BYTES);
     memset(&operation, 0, sizeof(operation));
     memset(&arg[0], 0, sizeof(arg[0]));

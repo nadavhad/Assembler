@@ -162,7 +162,7 @@ static char directives[4][7] = {
  * Validate that the argument is a valid label (no reserved words, alphanumric characters, etc.)
  * @return 0 if it is valid, 1 otherwise.
  */
-int validateLabel(const char *label) {
+int  validateLabel(const char *label) {
     int i;
     char *iter;
     /*

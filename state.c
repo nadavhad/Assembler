@@ -37,7 +37,6 @@ int getLineNumber() {
 void incLineNumber() {
     getState()->lineNumber++;
 }
-/*TODO: add a constant for 3*/
 
 /**
  * Add a command and increment IC accordingly.

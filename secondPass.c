@@ -6,6 +6,9 @@
 #include "assembler.h"
 #include "symbolTable.h"
 
+/**
+ * The second pass of the assembler on the file
+ */
 int secondPass(char *fileName) {
     FILE *file;
     char line[MAX_LINE_LENGTH];

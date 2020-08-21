@@ -21,6 +21,9 @@ struct Node *initNode(char label[MAX_LABEL_LENGTH], int usage);
 static struct Node *_head = NULL;
 
 
+/**
+ * Create a new Node with the logged usage data
+ */
 struct Node *initNode(char label[MAX_LABEL_LENGTH], int usage) {
     /* allocate Node data */
     struct Node *node = (struct Node *) malloc(sizeof(struct Node));
@@ -30,7 +33,9 @@ struct Node *initNode(char label[MAX_LABEL_LENGTH], int usage) {
     node->data.usageAddress = usage;
     return node;
 }
-
+/**
+ * Log a usage of an external label/symbol
+ */
 int addUsage(char externLabel[MAX_LABEL_LENGTH], int usageAddress) {
     /* init the list if still empty */
     if (_head == NULL) {
@@ -46,7 +51,9 @@ int addUsage(char externLabel[MAX_LABEL_LENGTH], int usageAddress) {
     }
     return 0;
 }
-
+/**
+ * Empty the usage recordings
+ */
 void clearExternUsagesTable() {
     struct Node *iterator = _head;
     /* free the list */
@@ -57,7 +64,9 @@ void clearExternUsagesTable() {
     }
     _head = NULL;
 }
-
+/**
+ * Expose the first Node for iteration purposes
+ */
 int startExternUsageIteration(void **iterator, ExternUsage *data) {
     /* expose _head */
     *iterator = _head;
@@ -67,7 +76,9 @@ int startExternUsageIteration(void **iterator, ExternUsage *data) {
     }
     return 0;
 }
-
+/**
+ * Expose the next Node for iteration purposes
+ */
 int getExternUsageNext(void **iterator, ExternUsage *data) {
     /* expose the next Node */
     *iterator = ((struct Node *) *iterator)->next;
