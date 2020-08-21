@@ -47,7 +47,7 @@ static int verifyArguments(Operation *op, CommandTokens *commandTokens);
  * d Y  externusage
  *   N  firstpass
  *   N  main.c
- *   Y  outfile
+ * d Y  outfile
  * d -  parsing
  *   Y  secondpass
  *   N  state
@@ -178,29 +178,37 @@ static int encodeCommand(Operation *command, CommandTokens args, char *encodedOp
 
         retVal = buildDataByte(args.arg1Data, 1, &arg[0]);
         if (retVal == -1) {
+            /* error */
             return -1;
         } else if (retVal == 2) {
+            /* we have one less argument */
             numArgs = 0;
         }
     } else if (args.numArgs == 2) {/* if we have two args, then first is src and second is dest */
         numArgs = 2;
+        /* save the first argument */
         operation.srcRegister = args.arg1Data.reg;
         operation.srcAddressing = args.arg1Data.addressing;
 
         retVal = buildDataByte(args.arg1Data, 1, &arg[0]);
         if (retVal == -1) {
+            /* error */
             return -1;
         } else if (retVal == 2) {
+            /* we have one less argument */
             numArgs--;
         }
 
+        /* save the second argument */
         operation.destRegister = args.arg2Data.reg;
         operation.destAddressing = args.arg2Data.addressing;
 
         retVal = buildDataByte(args.arg2Data, numArgs, &arg[numArgs - 1]);
         if (retVal == -1) {
+            /* error */
             return -1;
         } else if (retVal == 2) {
+            /* we have one less argument */
             numArgs--;
         }
     }
