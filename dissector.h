@@ -72,7 +72,6 @@ int dissectLabel(char *, DissectedLine *);
 
 /**
  * Splits a command string into a command and its arguments
- * @return
  */
 int dissectCommand(char *line, CommandTokens *);
 

@@ -3,6 +3,9 @@
 
 #include "dissector.h"
 
+/**
+ * Handle directive code all the way to building and saving machine code
+ */
 int handleDirective(DissectedDirective dissectedDirective);
 
 /**
