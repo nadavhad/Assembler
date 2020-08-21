@@ -2,7 +2,7 @@
 #define SHAREDFOLDER_STATE_H
 
 /**
- * TODO:A struct holding the state of the code
+ * A struct holding the state of the assembler
  */
 typedef struct {
     int lineNumber;

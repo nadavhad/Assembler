@@ -45,12 +45,12 @@ static int verifyArguments(Operation *op, CommandTokens *commandTokens);
  * d N  dissector
  * d Y  errorlog
  * d Y  externusage
- *   N  firstpass
+ * d N  firstpass
  * d N  main.c
  * d Y  outfile
  * d -  parsing
  * d Y  secondpass
- * i N  state
+ * d N  state
  *   N  symboltable
  * d -  types.h
  */

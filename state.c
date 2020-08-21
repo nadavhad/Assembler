@@ -11,7 +11,6 @@ State *getState() {
     return &state;
 }
 
-    /*TODO:initialize dataByteCode??*/
 /**
  * Initializes the values of state
  * */
@@ -22,6 +21,8 @@ void initializeState() {
     getState()->DCF = -1;
     getState()->ICF = -1;
     memset(getState()->currentByteCode, 0, sizeof(getState()->currentByteCode));
+    memset(getState()->dataByteCode, 0, sizeof(getState()->dataByteCode));
+
 }
 /**
  * Get the current line number in the assembly file

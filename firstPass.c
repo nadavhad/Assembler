@@ -8,6 +8,14 @@
 #include "errorLog.h"
 #include "assembler.h"
 
+
+/**
+ * This function performs the first pass on the given file.
+ * 1. Opens the file given as a parameter.
+ * 2. Reads the file (line by line)
+ * 3. dissects each line and acts accordingly.
+ * @return 0 on success, -1 on failure.
+ * */
 int firstPass(char *fileName) {
     FILE *file;
     char line[MAX_LINE_LENGTH + 5];
@@ -20,7 +28,7 @@ int firstPass(char *fileName) {
         perror(fileName);
         return -1;
     }
-
+    /* Initializing state */
     initializeState();
     while (1) {
         /* Read a line */
@@ -57,7 +65,7 @@ int firstPass(char *fileName) {
                 /* handle directives */
             case LT_DIRECTIVE:
                 if (getDirectiveType(dissectedLine, &dissectedDirective) == 0) {
-                    if (handleDirectiveLabelFirstPass(dissectedLine, dissectedDirective) == 0) {
+                    if (handleDirectiveLabelFirstPass(dissectedLine, dissectedDirective) == 0) { {
                         handleDirective(dissectedDirective);
                     }
                 }
@@ -66,15 +74,26 @@ int firstPass(char *fileName) {
     }
 }
 
-/**/
+
+/**
+ * Handles the command labels - adds the label to the symbol table as code (ST_CODE).
+ * @return 0 on success, -1 on failure.
+ * */
 int handleCmdLabelFirstPass(DissectedLine dissectedLine) {
     if (addSymbol(dissectedLine.label, getState()->IC, ST_CODE, FALSE) != 0) {
+        /* failed to add label to the symbol table*/
         return -1;
     }
     return 0;
 }
 
-/* */
+/**
+ * Handles the directive labels.
+ * A label before .entry or .extern is ignored and a warning is printed.
+ * An entry or extern label - is ignored in the first pass.
+ * A data or string label - is added to the symbol table as data (ST_DATA).
+ * @return 0 on success, -1 on failure.
+ * */
 int handleDirectiveLabelFirstPass(DissectedLine dissectedLine, DissectedDirective dissectedDirective) {
     enum bool isEntry = FALSE;
     /* Any label before .entry/.extern is ignored. We issue a warning to the user. */
