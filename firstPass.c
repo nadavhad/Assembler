@@ -65,15 +65,16 @@ int firstPass(char *fileName) {
                 /* handle directives */
             case LT_DIRECTIVE:
                 if (getDirectiveType(dissectedLine, &dissectedDirective) == 0) {
-                    if (handleDirectiveLabelFirstPass(dissectedLine, dissectedDirective) == 0) { {
-                        handleDirective(dissectedDirective);
+                    if (handleDirectiveLabelFirstPass(dissectedLine, dissectedDirective) == 0) {
+                        {
+                            handleDirective(dissectedDirective);
+                        }
                     }
+                    break;
                 }
-                break;
         }
     }
 }
-
 
 /**
  * Handles the command labels - adds the label to the symbol table as code (ST_CODE).
