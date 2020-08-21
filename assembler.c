@@ -42,11 +42,11 @@ static int verifyArguments(Operation *op, CommandTokens *commandTokens);
  * Document
  * d Y  assembler
  * d N  constants.h
- *   N  dissector
+ * d N  dissector
  * d Y  errorlog
  * d Y  externusage
  *   N  firstpass
- * i N  main.c
+ * d N  main.c
  * d Y  outfile
  * d -  parsing
  * d Y  secondpass
@@ -204,7 +204,7 @@ static int encodeCommand(Operation *command, CommandTokens args, char *encodedOp
     int numArgs = 0;
     int retVal;
     /* TODO: magic number */
-    memset(encodedOpcode, 0, 9);
+    memset(encodedOpcode, 0, 3*WORD_SIZE_BYTES);
     memset(&operation, 0, sizeof(operation));
     memset(&arg[0], 0, sizeof(arg[0]));
     memset(&arg[1], 0, sizeof(arg[1]));
@@ -263,13 +263,13 @@ static int encodeCommand(Operation *command, CommandTokens args, char *encodedOp
     }
     /* save the encoded data */
     *opcodeLen = 1;
-    memcpy(encodedOpcode, &operation, 3);
+    memcpy(encodedOpcode, &operation, WORD_SIZE_BYTES);
     if (numArgs > 0) {
-        memcpy(encodedOpcode + 3, &arg[0], 3);
+        memcpy(encodedOpcode + WORD_SIZE_BYTES, &arg[0], WORD_SIZE_BYTES);
         (*opcodeLen)++;
     }
     if (numArgs > 1) {
-        memcpy(encodedOpcode + 6, &arg[1], 3);
+        memcpy(encodedOpcode + (2*WORD_SIZE_BYTES), &arg[1], WORD_SIZE_BYTES);
         (*opcodeLen)++;
     }
     return 0;

@@ -11,6 +11,8 @@
 #define MAX_PARAMS 2
 /* Maximum amount of tokens from any line */
 #define MAX_TOKENS 4
+/* word size in bytes (3*8 bits = 24 bits) */
+#define WORD_SIZE_BYTES 3
 /* Maximum length of a file name */
 #define MAX_FILE_NAME 100
 /* Maximum positive number that can fit into of 24 bits (the size of a "word") */

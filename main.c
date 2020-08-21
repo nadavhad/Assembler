@@ -12,7 +12,9 @@
  * */
 static int processAssemblyFile(char *basefileName);
 
-/* TODO */
+/**
+ * loop over all input arguments and process the files
+ * */
 int main(int argc, char **argv) {
     int i;
     /* For each file */
