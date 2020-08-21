@@ -27,6 +27,7 @@ void clearErrorLog();
 /**
  * A macro representing an error clause/block.
  * Supports formatting.
+ * Usage: `ERROR_RET((_, "format", format_args)`
  */
 #define ERROR_RET(__msg) {\
                 char _[200];\
@@ -35,5 +36,8 @@ void clearErrorLog();
                 return -1;\
             }
 
+/**
+ * Converts an AddressingType value to a string value for printing
+ */
 char* addressingTypeStr(enum AddressingType addressingType);
 #endif /*ASSEMBLER_ERRORLOG_H*/

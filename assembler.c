@@ -43,7 +43,7 @@ static int verifyArguments(Operation *op, CommandTokens *commandTokens);
  * d Y  assembler
  * d N  constants.h
  *   N  dissector
- *   Y  errorlog
+ * d Y  errorlog
  *   Y  externusage
  *   N  firstpass
  *   N  main.c

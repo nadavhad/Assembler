@@ -4,11 +4,27 @@
 #include "types.h"
 
 #define MAX_ERROR_LENGTH 200
+/**
+ * A linked-list Node for error saving
+ */
 struct Node {
     char string[MAX_ERROR_LENGTH];
     struct Node *next;
 };
 
+/**
+ * Print to stderr
+ */
+static void errorLog(const char *string);
+
+/**
+ * Create a new Node containing the given string
+ */
+static struct Node *createNode(const char *string);
+
+/**
+ * The head of the linked list
+ */
 static struct Node *_head = NULL;
 
 static struct Node *createNode(const char *string) {
@@ -23,15 +39,20 @@ void logError(int lineNumber, char *errorStr) {
     char errorWithLine[MAX_ERROR_LENGTH + 10];
     struct Node *added;
     struct Node *iterator = NULL;
+    /* format error with line number appropriately */
     sprintf(errorWithLine, "%d: %s", lineNumber, errorStr);
+    /* create a new node with the currently logged error */
     added = createNode(errorWithLine);
+    /* init the list if still empty */
     if (_head == NULL) {
         _head = createNode("Errors:");
     }
+    /* iterate to the end of the list */
     iterator = _head;
     while (iterator->next != NULL) {
         iterator = iterator->next;
     }
+    /* add the new Node to the list*/
     iterator->next = added;
 }
 
@@ -42,6 +63,7 @@ static void errorLog(const char *string) {
 int numErrors() {
     struct Node *node = _head;
     int counter = 0;
+    /* count how many errors we have */
     while (node != NULL) {
         node = node->next;
         counter++;
@@ -52,6 +74,7 @@ int numErrors() {
 void flush() {
     struct Node *node = _head;
     while (node != NULL) {
+        /* print each error to stderr */
         errorLog(node->string);
         node = node->next;
     }
@@ -59,6 +82,7 @@ void flush() {
 
 void clearErrorLog() {
     struct Node *iterator = _head;
+    /* free the list */
     while (iterator != NULL) {
         struct Node *next = iterator->next;
         free(iterator);
@@ -69,6 +93,7 @@ void clearErrorLog() {
 
 char *addressingTypeStr(enum AddressingType addressingType) {
     static char buf[10];
+    /* return a string with the given addressing type */
     switch (addressingType) {
         case AT_IMMEDIATE:
             strcpy(buf, "IMMEDIATE");
