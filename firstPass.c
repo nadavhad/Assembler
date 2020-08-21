@@ -82,7 +82,7 @@ int firstPass(char *fileName) {
  * */
 int handleCmdLabelFirstPass(DissectedLine dissectedLine) {
     if (addSymbol(dissectedLine.label, getState()->IC, ST_CODE, FALSE) != 0) {
-        /* failed to add label to the symbol table*/
+        /* failed to add label to the symbol table */
         return -1;
     }
     return 0;
